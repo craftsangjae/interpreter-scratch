@@ -29,3 +29,25 @@ def test_parse_let_statements(test_input, expected_identifiers, expected_types):
             assert stmt.name.token_literal() == identifier
         else:
             assert False, f"{i}th stmt fails to match"
+
+
+@pytest.mark.parametrize('test_input,expected_message', [
+    (
+            "let x  3;", ''
+    ),
+    (
+            "let  = 3;", ''
+    ),
+    (
+            "let  = ;", ''
+    ),
+    (
+            "let x = 3", ''
+    )
+])
+def test_parse_wrong_let_statements(test_input, expected_message):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert parser.errors

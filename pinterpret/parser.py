@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier
 from pinterpret.lexer import Lexer
@@ -11,12 +11,16 @@ class Parser:
     ct: Token
     nt: Token
 
+    errors: List[str]
+
     def __init__(self, lexer: Lexer):
         self.lexer = lexer
-        self.ct = None
-        self.nt = None
-        self.next_token()
-        self.next_token()
+
+        # initialize current token & next_token
+        self.ct = self.lexer.next_token()
+        self.nt = self.lexer.next_token()
+
+        self.errors = []
 
     def parse_program(self) -> Program:
         program = Program()
@@ -39,19 +43,23 @@ class Parser:
         else:
             return None
 
-    def parse_let_statement(self) -> LetStatement:
+    def parse_let_statement(self) -> Optional[LetStatement]:
         let_token = self.ct
 
         if not self.expect_peek(TokenType.IDENT):
-            return None
+            return
 
         identifier = Identifier(self.ct)
 
         if not self.expect_peek(TokenType.ASSIGN):
-            return None
+            return
 
         while not self.curr_token_is(TokenType.SEMICOLON):
             self.next_token()
+
+            if self.curr_token_is(TokenType.EOF):
+                self.peek_error(TokenType.SEMICOLON)
+                break
 
         return LetStatement(let_token, identifier, None)
 
@@ -65,4 +73,9 @@ class Parser:
         if self.next_token_is(t):
             self.next_token()
             return True
+        self.peek_error(t)
         return False
+
+    def peek_error(self, t: TokenType):
+        error = f'expected next token to be {t.value}, got {self.nt.type} instead'
+        self.errors.append(error)

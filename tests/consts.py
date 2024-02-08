@@ -24,3 +24,9 @@ let x = 5;
 let y = 10;
 let foobar = 838383;
 '''
+
+SOURCE_CODE_TEST_004 = '''
+let x = 5;
+return 7;
+return 14;
+'''

@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pinterpret.ast import Program, Statement, LetStatement, Identifier
+from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -40,6 +40,8 @@ class Parser:
     def parse_statement(self) -> Optional[Statement]:
         if self.ct.type == TokenType.LET:
             return self.parse_let_statement()
+        elif self.ct.type == TokenType.RETURN:
+            return self.parse_return_statement()
         else:
             return None
 
@@ -62,6 +64,18 @@ class Parser:
                 break
 
         return LetStatement(let_token, identifier, None)
+
+    def parse_return_statement(self) -> Optional[ReturnStatement]:
+        return_token = self.ct
+
+        while not self.curr_token_is(TokenType.SEMICOLON):
+            self.next_token()
+
+            if self.curr_token_is(TokenType.EOF):
+                self.peek_error(TokenType.SEMICOLON)
+                break
+
+        return ReturnStatement(return_token, None)
 
     def curr_token_is(self, t: TokenType) -> bool:
         return self.ct.type == t

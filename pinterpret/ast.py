@@ -62,6 +62,21 @@ class LetStatement(Statement):
         return self.token.literal
 
 
+class ReturnStatement(Statement):
+    """
+    ex) return 5;
+    """
+    token: Token
+    return_value: Expression
+
+    def __init__(self, token: Token, return_value: Expression):
+        self.token = token
+        self.return_value = return_value
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+
 class Program(Node):
     statements: List[Statement]
 

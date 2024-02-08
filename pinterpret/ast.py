@@ -41,6 +41,9 @@ class Identifier(Expression):
     def token_literal(self) -> str:
         return self.token.literal
 
+    def __str__(self):
+        return self.value
+
 
 class LetStatement(Statement):
     """
@@ -61,6 +64,9 @@ class LetStatement(Statement):
     def token_literal(self) -> str:
         return self.token.literal
 
+    def __str__(self):
+        return f"{self.token.literal} {self.name.token_literal() if self.name else ''} = {self.value.token_literal() if self.value else ''};"
+
 
 class ReturnStatement(Statement):
     """
@@ -75,6 +81,26 @@ class ReturnStatement(Statement):
 
     def token_literal(self) -> str:
         return self.token.literal
+
+    def __str__(self):
+        return f"{self.token.literal} {self.return_value.token_literal() if self.return_value else ''};"
+
+
+class ExpressionStatement(Statement):
+    token: Token
+    expression: Expression
+
+    def __init__(self, token: Token, expression: Expression):
+        self.token = token
+        self.expression = expression
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        if self.expression:
+            return str(self.expression)
+        return ""
 
 
 class Program(Node):
@@ -91,3 +117,9 @@ class Program(Node):
             return self.statements[0].token_literal()
         else:
             return ''
+
+    def __str__(self):
+        output = ''
+        for stmt in self.statements:
+            output += str(stmt) + '\n'
+        return output.strip()

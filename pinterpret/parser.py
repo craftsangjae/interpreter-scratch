@@ -10,7 +10,7 @@ from enum import IntEnum
 from typing import Optional, List, Dict, Callable
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
-    ExpressionStatement, IntegerExpression, PrefixExpression
+    ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -24,6 +24,19 @@ class OperatorPrecedence(IntEnum):
     PREFIX = 6
     CALL = 7
 
+
+PRECEDENCE_RELATION = {
+    TokenType.EQUAL: OperatorPrecedence.EQUALS,
+    TokenType.NOT_EQUAL: OperatorPrecedence.EQUALS,
+
+    TokenType.LT: OperatorPrecedence.LESSGREATER,
+    TokenType.GT: OperatorPrecedence.LESSGREATER,
+
+    TokenType.PLUS: OperatorPrecedence.SUM,
+    TokenType.MINUS: OperatorPrecedence.SUM,
+    TokenType.SLASH: OperatorPrecedence.PRODUCT,
+    TokenType.ASTERISK: OperatorPrecedence.PREFIX
+}
 
 # 전위함수 파싱 로직
 prefix_parse_ftype = Callable[[], Expression]
@@ -56,6 +69,12 @@ class Parser:
         self.register_prefix(TokenType.INT, self.parse_identifier)
         self.register_prefix(TokenType.BANG, self.parse_prefix_expression)
         self.register_prefix(TokenType.MINUS, self.parse_prefix_expression)
+
+        [
+            self.register_infix(token_type, self.parse_infix_expression)
+            for token_type in [TokenType.PLUS, TokenType.MINUS, TokenType.SLASH, TokenType.ASTERISK,
+                               TokenType.LT, TokenType.GT, TokenType.EQUAL, TokenType.NOT_EQUAL, ]
+        ]
 
     def parse_program(self) -> Program:
         program = Program()
@@ -152,10 +171,28 @@ class Parser:
         error = f'expected next token to be {t.value}, got {self.nt.type} instead'
         self.errors.append(error)
 
-    def parse_expression(self, priority: OperatorPrecedence) -> Optional[Expression]:
+    def curr_precedence(self) -> OperatorPrecedence:
+        global PRECEDENCE_RELATION
+        return PRECEDENCE_RELATION.get(self.ct.type, OperatorPrecedence.LOWEST)
+
+    def next_precedence(self) -> OperatorPrecedence:
+        global PRECEDENCE_RELATION
+        return PRECEDENCE_RELATION.get(self.nt.type, OperatorPrecedence.LOWEST)
+
+    def parse_expression(self, precedence: OperatorPrecedence) -> Optional[Expression]:
         if prefix := self.prefix_parse_fns.get(self.ct.type):
-            # if prefix is not None,
-            return prefix()
+            left_expression = prefix()
+        else:
+            self.errors.append(f"no prefix parse function for {self.ct.type} found")
+            return None
+
+        while (not self.next_token_is(TokenType.SEMICOLON) and precedence < self.next_precedence()):
+            infix = self.infix_parse_fns.get(self.nt.type, None)
+            if infix is None:
+                return left_expression
+            self.next_token()
+            left_expression = infix(left_expression)
+        return left_expression
 
     def parse_identifier(self) -> Identifier:
         return Identifier(self.ct)
@@ -168,3 +205,10 @@ class Parser:
         self.next_token()
         right = self.parse_expression(OperatorPrecedence.PREFIX)
         return PrefixExpression(token, right)
+
+    def parse_infix_expression(self, left: Expression) -> Expression:
+        token = self.ct
+        precedence = self.curr_precedence()
+        self.next_token()
+        right = self.parse_expression(precedence)
+        return InfixExpression(token, left, right)

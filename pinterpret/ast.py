@@ -45,6 +45,26 @@ class PrefixExpression(Expression):
         return f"({self.operator}{self.right})"
 
 
+class InfixExpression(Expression):
+    token: Token
+
+    left: Expression
+    operator: str
+    right: Expression
+
+    def __init__(self, token: Token, left: Expression, right: Expression):
+        self.token = token
+        self.left = left
+        self.operator = token.literal
+        self.right = right
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        return f"({self.left}{self.operator}{self.right})"
+
+
 class IntegerExpression(Expression):
     """ 숫자형 표현
     """

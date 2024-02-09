@@ -1,6 +1,9 @@
 import pytest
 
-from pinterpret.ast import LetStatement, ReturnStatement, ExpressionStatement, Identifier, PrefixExpression
+from pinterpret.ast import (
+    LetStatement, ReturnStatement, ExpressionStatement,
+    Identifier, PrefixExpression, InfixExpression
+)
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
 from pinterpret.token import TokenType
@@ -88,3 +91,27 @@ def test_parse_single_line_prefix_expression(test_input, expected):
     identifier: PrefixExpression = stmt.expression
     assert identifier.operator == expected[0]
     assert identifier.right.token_literal() == expected[1]
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    ('5 + 5;', ['5', '+', '5']),
+    ('5 - 5;', ['5', '-', '5']),
+    ('5 * 5;', ['5', '*', '5']),
+    ('5 / 5;', ['5', '/', '5']),
+    ('5 > 5;', ['5', '>', '5']),
+    ('5 < 5;', ['5', '<', '5']),
+    ('5 == 5;', ['5', '==', '5']),
+    ('5 != 5;', ['5', '!=', '5']),
+])
+def test_parse_single_line_infix_expression(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    identifier: InfixExpression = stmt.expression
+    assert identifier.left.token_literal() == expected[0]
+    assert identifier.operator == expected[1]
+    assert identifier.right.token_literal() == expected[2]

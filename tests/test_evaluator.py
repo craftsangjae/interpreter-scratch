@@ -19,6 +19,10 @@ from pinterpret.parser import Parser
         ("!!!true", False),
         ("-5", -5),
         ("--5", 5),
+        ("5+2", 7),
+        ("5/2", 2),
+        ("(5+2)*3", 21),
+        ("2+7*3/7*10", 32),
     ],
 )
 def test_evaluate_single_statement(test_input, expected):

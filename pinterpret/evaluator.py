@@ -8,6 +8,7 @@ from pinterpret.ast import (
     Program,
     Statement,
     PrefixExpression,
+    InfixExpression,
 )
 from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj
 from pinterpret.token import TokenType
@@ -22,6 +23,9 @@ def evaluate(node: Node) -> Object:
 
     elif isinstance(node, PrefixExpression):
         return evaluate_prefix_expression(node)
+
+    elif isinstance(node, InfixExpression):
+        return evaluate_infix_expression(node)
 
     elif isinstance(node, IntegerLiteral):
         return IntegerObj(node.value)
@@ -63,5 +67,28 @@ def evaluate_prefix_expression(node: PrefixExpression):
         return evaluate_bang_prefix_expression(right_obj)
     elif node.token.type == TokenType.MINUS:
         return evaluate_minus_prefix_expression(right_obj)
+    else:
+        return NullObj()
+
+
+def evaluate_infix_expression(node: InfixExpression) -> Object:
+    left_obj = evaluate(node.left)
+    right_obj = evaluate(node.right)
+
+    if node.operator in ("+", "-", "*", "/"):
+        if not (isinstance(left_obj, IntegerObj) and isinstance(right_obj, IntegerObj)):
+            return NullObj()
+        if node.operator == "+":
+            return IntegerObj(left_obj.value + right_obj.value)
+        elif node.operator == "-":
+            return IntegerObj(left_obj.value - right_obj.value)
+        elif node.operator == "*":
+            return IntegerObj(left_obj.value * right_obj.value)
+        elif node.operator == "/":
+            return IntegerObj(left_obj.value // right_obj.value)
+        else:
+            return NullObj()
+    elif node.operator in ("<", ">", "==", "!="):
+        pass
     else:
         return NullObj()

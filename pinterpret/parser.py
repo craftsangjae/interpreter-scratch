@@ -59,7 +59,7 @@ PRECEDENCE_RELATION = {
     TokenType.PLUS: OperatorPrecedence.SUM,
     TokenType.MINUS: OperatorPrecedence.SUM,
     TokenType.SLASH: OperatorPrecedence.PRODUCT,
-    TokenType.ASTERISK: OperatorPrecedence.PREFIX,
+    TokenType.ASTERISK: OperatorPrecedence.PRODUCT,
     TokenType.LPAREN: OperatorPrecedence.CALL,
 }
 

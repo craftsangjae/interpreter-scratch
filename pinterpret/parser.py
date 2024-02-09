@@ -5,6 +5,16 @@ Parsing의 정의
 자료구조 형태는 파스 트리(Parse Tree), 추상구문트리일 수 있고, 그렇지 않으면 다른 계층 구조일 수 도 있다.
 파서는 자료구조를 만들면서 구조화된 표현을 더ㅏㅎ기도, 구문이 올바른지 검사하기도 한다.
 
+프랫파서 로직으로 구현되어 있음
+<Top Down Operator Precedence, Vaughan Pratt>에 따른 로직
+
+프랫파서의 역할
+
+INPUT               OUTPUT
+1 + 2 + 3;   ==>    ((1 + 2) + 3);
+2 + 3 * 4;   ==>    (2 + (3  * 4);
+-3 + 2 * 7;  ==>    ((-3) + (2 * 7));
+
 """
 from enum import IntEnum
 from typing import Optional, List, Dict, Callable
@@ -180,19 +190,32 @@ class Parser:
         return PRECEDENCE_RELATION.get(self.nt.type, OperatorPrecedence.LOWEST)
 
     def parse_expression(self, precedence: OperatorPrecedence) -> Optional[Expression]:
+        """ 프렛파서에서 핵심이 되는 로직
+
+        case 1. '-a;'
+
+        case 2. 'a + b;'
+
+        case 3. 'a + b * c;'
+
+        case 4. 'a + b + c;'
+
+        :param precedence:
+        :return:
+        """
         if prefix := self.prefix_parse_fns.get(self.ct.type):
-            left_expression = prefix()
+            l_expr = prefix()
         else:
             self.errors.append(f"no prefix parse function for {self.ct.type} found")
             return None
 
-        while (not self.next_token_is(TokenType.SEMICOLON) and precedence < self.next_precedence()):
-            infix = self.infix_parse_fns.get(self.nt.type, None)
-            if infix is None:
-                return left_expression
+        while not self.next_token_is(TokenType.SEMICOLON) and precedence < self.next_precedence():
+            infix_function = self.infix_parse_fns.get(self.nt.type, None)
+            if infix_function is None:
+                return l_expr
             self.next_token()
-            left_expression = infix(left_expression)
-        return left_expression
+            l_expr = infix_function(l_expr)
+        return l_expr
 
     def parse_identifier(self) -> Identifier:
         return Identifier(self.ct)

@@ -115,3 +115,19 @@ def test_parse_single_line_infix_expression(test_input, expected):
     assert identifier.left.token_literal() == expected[0]
     assert identifier.operator == expected[1]
     assert identifier.right.token_literal() == expected[2]
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    ('a + b + c;', '((a+b)+c)'),
+    ('a + b - c;', '((a+b)-c)'),
+    ('a + b / c;', '(a+(b/c))'),
+])
+def test_parse_multiple_lines_infix_expression(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    assert str(stmt) == expected

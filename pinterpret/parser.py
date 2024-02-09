@@ -91,6 +91,9 @@ class Parser:
                       TokenType.LT, TokenType.GT, TokenType.EQUAL, TokenType.NOT_EQUAL, ]
         ]
 
+        # register group expression
+        self.register_prefix(TokenType.LPAREN, self.parse_grouped_expression)
+
     def parse_program(self) -> Program:
         program = Program()
 
@@ -256,3 +259,13 @@ class Parser:
         self.next_token()
         right_expr = self.parse_expression(precedence)
         return InfixExpression(token, left_expr, right_expr)
+
+    def parse_grouped_expression(self) -> Expression:
+        self.next_token()
+
+        expr = self.parse_expression(OperatorPrecedence.LOWEST)
+
+        if not self.expect_peek(TokenType.RPAREN):
+            return None
+
+        return expr

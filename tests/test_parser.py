@@ -141,3 +141,18 @@ def test_parse_multiple_lines_infix_expression(test_input, expected):
 
     stmt: ExpressionStatement = program.statements[0]
     assert str(stmt) == expected
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    ('- 5 * (3 + 2);', '((-5)*(3+2))'),
+    ('3 + (2 - 5) * 2;', '(3+((2-5)*2))'),
+])
+def test_parse_grouped_expression(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    assert str(stmt) == expected

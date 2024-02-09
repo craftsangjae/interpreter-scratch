@@ -55,16 +55,19 @@ def test_parse_wrong_let_statements(test_input, expected_message):
     assert parser.errors
 
 
-@pytest.mark.parametrize('test_input,num_stmts', [
-    ('foobar;', 1)
+@pytest.mark.parametrize('test_input,expected', [
+    ('foobar;', 'foobar'),
+    ('baby;', 'baby'),
+    ('5;', '5'),
+    ('7;', '7'),
 ])
-def test_parse_identifier_expression(test_input, num_stmts):
+def test_parse_single_line_expression_statement(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
     program = parser.parse_program()
 
-    assert len(program.statements) == num_stmts
+    assert len(program.statements) == 1
 
     stmt: ExpressionStatement = program.statements[0]
     identifier: Identifier = stmt.expression
-    assert identifier.value == 'foobar'
+    assert identifier.value == expected

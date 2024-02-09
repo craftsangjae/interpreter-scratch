@@ -28,6 +28,23 @@ class Expression(Node):
     pass
 
 
+class IntegerExpression(Expression):
+    """ 숫자형 표현
+    """
+    token: Token
+    value: int
+
+    def __init__(self, token: Token):
+        self.token = token
+        self.value = int(token.literal)
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        return str(self.value)
+
+
 class Identifier(Expression):
     """ 식별자 노드
     """

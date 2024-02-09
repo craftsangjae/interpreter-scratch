@@ -6,6 +6,7 @@ class ObjectType(Enum):
     Integer = "INTEGER"
     Boolean = "BOOLEAN"
     Null = "NULL"
+    Return = "RETURN"
 
 
 class Object(ABC):
@@ -57,3 +58,16 @@ class NullObj(Object):
 
     def __eq__(self, other: "NullObj"):
         return isinstance(other, NullObj)
+
+
+class ReturnObj(Object):
+
+    def __init__(self, value: Object):
+        self.type = ObjectType.Return
+        self.value = value
+
+    def inspect(self) -> str:
+        return self.value.inspect()
+
+    def __eq__(self, other: Object):
+        return self.value == other

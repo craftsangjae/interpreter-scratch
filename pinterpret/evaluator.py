@@ -11,8 +11,9 @@ from pinterpret.ast import (
     InfixExpression,
     IfExpression,
     BlockStatement,
+    ReturnStatement,
 )
-from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj
+from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj, ReturnObj
 from pinterpret.token import TokenType
 
 
@@ -35,6 +36,9 @@ def evaluate(node: Node) -> Object:
     elif isinstance(node, IfExpression):
         return evaluate_if_expression(node)
 
+    elif isinstance(node, ReturnStatement):
+        return evaluate_return_statement(node)
+
     elif isinstance(node, IntegerLiteral):
         return IntegerObj(node.value)
 
@@ -48,6 +52,8 @@ def evaluate_statements(stmts: List[Statement]) -> Object:
     result = NullObj()
     for stmt in stmts:
         result = evaluate(stmt)
+        if isinstance(result, ReturnObj):
+            return result
     return result
 
 
@@ -125,6 +131,11 @@ def evaluate_if_expression(node: IfExpression) -> Object:
     elif node.alternative:
         return evaluate(node.alternative)
     return NullObj()
+
+
+def evaluate_return_statement(node: ReturnStatement) -> Object:
+    value = evaluate(node.return_value)
+    return ReturnObj(value)
 
 
 def is_truthy(value: Object):

@@ -63,3 +63,24 @@ def test_evaluate_if_expression(test_input, expected):
     result = evaluate(program)
 
     assert result.inspect() == str(expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("return 5; 3", 5),
+        ("return 5", 5),
+        ("5;return 3", 3),
+        ("5;return 3; 7;", 3),
+        ("5;return 3;return 5; 4;", 3),
+    ],
+)
+def test_evaluate_return_statements(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+
+    program = parser.parse_program()
+
+    result = evaluate(program)
+
+    assert result.inspect() == str(expected)

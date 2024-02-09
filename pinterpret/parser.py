@@ -28,10 +28,10 @@ from pinterpret.ast import (
     ReturnStatement,
     Expression,
     ExpressionStatement,
-    IntegerExpression,
+    IntegerLiteral,
     PrefixExpression,
     InfixExpression,
-    BoolExpression,
+    BoolLiteral,
     IfExpression,
     BlockStatement,
     FunctionLiteral,
@@ -91,10 +91,10 @@ class Parser:
         self.infix_parse_fns = {}
 
         # register identifier
-        [
-            self.register_prefix(t, self.parse_identifier)
-            for t in [TokenType.IDENT, TokenType.INT]
-        ]
+        self.register_prefix(TokenType.IDENT, self.parse_integer)
+
+        # register integer
+        self.register_prefix(TokenType.INT, self.parse_integer)
 
         # register bool literal
         [
@@ -289,10 +289,10 @@ class Parser:
         return Identifier(self.ct)
 
     def parse_integer(self) -> Expression:
-        return IntegerExpression(self.ct)
+        return IntegerLiteral(self.ct)
 
     def parse_bool(self) -> Expression:
-        return BoolExpression(self.ct)
+        return BoolLiteral(self.ct)
 
     def parse_prefix_expression(self) -> Expression:
         token = self.ct

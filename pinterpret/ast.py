@@ -54,7 +54,7 @@ class InfixExpression(Expression):
         return f"({self.left}{self.operator}{self.right})"
 
 
-class IntegerExpression(Expression):
+class IntegerLiteral(Expression):
     """숫자형 표현"""
 
     token: Token
@@ -71,7 +71,7 @@ class IntegerExpression(Expression):
         return str(self.value)
 
 
-class BoolExpression(Expression):
+class BoolLiteral(Expression):
     """불 리터럴"""
 
     token: Token

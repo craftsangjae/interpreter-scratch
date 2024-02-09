@@ -1,8 +1,15 @@
 import pytest
 
 from pinterpret.ast import (
-    LetStatement, ReturnStatement, ExpressionStatement,
-    Identifier, PrefixExpression, InfixExpression, IfExpression, FunctionLiteral, CallExpression
+    LetStatement,
+    ReturnStatement,
+    ExpressionStatement,
+    Identifier,
+    PrefixExpression,
+    InfixExpression,
+    IfExpression,
+    FunctionLiteral,
+    CallExpression,
 )
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
@@ -10,19 +17,20 @@ from pinterpret.token import TokenType
 from tests.consts import SOURCE_CODE_TEST_004
 
 
-@pytest.mark.parametrize('test_input,expected_identifiers,expected_types', [
-    (
+@pytest.mark.parametrize(
+    "test_input,expected_identifiers,expected_types",
+    [
+        (
             SOURCE_CODE_TEST_004,
-            ['x', '', ''],
-            [TokenType.LET, TokenType.RETURN, TokenType.RETURN]
-    ),
-    (
-            'let x = true;',
-            ['x'],
-            [TokenType.LET]
-    )
-])
-def test_parse_let_and_return_statements(test_input, expected_identifiers, expected_types):
+            ["x", "", ""],
+            [TokenType.LET, TokenType.RETURN, TokenType.RETURN],
+        ),
+        ("let x = true;", ["x"], [TokenType.LET]),
+    ],
+)
+def test_parse_let_and_return_statements(
+    test_input, expected_identifiers, expected_types
+):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
     program = parser.parse_program()
@@ -31,7 +39,9 @@ def test_parse_let_and_return_statements(test_input, expected_identifiers, expec
 
     assert len(program.statements) == len(expected_identifiers)
 
-    for i, (stmt, identifier, type) in enumerate(zip(program.statements, expected_identifiers, expected_types)):
+    for i, (stmt, identifier, type) in enumerate(
+        zip(program.statements, expected_identifiers, expected_types)
+    ):
         if isinstance(stmt, LetStatement):
             assert stmt.token.type == type
             assert stmt.name.token_literal() == identifier
@@ -41,10 +51,13 @@ def test_parse_let_and_return_statements(test_input, expected_identifiers, expec
             assert False, f"{i}th stmt fails to match"
 
 
-@pytest.mark.parametrize('test_input,expected_name,expected_value', [
-    ('let x = 3 + 7', 'x', '(3+7)'),
-    ('let y = a + b * c', 'y', '(a+(b*c))'),
-])
+@pytest.mark.parametrize(
+    "test_input,expected_name,expected_value",
+    [
+        ("let x = 3 + 7", "x", "(3+7)"),
+        ("let y = a + b * c", "y", "(a+(b*c))"),
+    ],
+)
 def test_parse_single_let_statement(test_input, expected_name, expected_value):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -57,11 +70,14 @@ def test_parse_single_let_statement(test_input, expected_name, expected_value):
     assert str(expr.value) == expected_value
 
 
-@pytest.mark.parametrize('test_input,expected_value', [
-    ('return 3+7;', '(3+7)'),
-    ('return a+b', '(a+b)'),
-    ('return a;', 'a'),
-])
+@pytest.mark.parametrize(
+    "test_input,expected_value",
+    [
+        ("return 3+7;", "(3+7)"),
+        ("return a+b", "(a+b)"),
+        ("return a;", "a"),
+    ],
+)
 def test_parse_single_return_statement(test_input, expected_value):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -73,17 +89,10 @@ def test_parse_single_return_statement(test_input, expected_value):
     assert str(expr.return_value) == expected_value
 
 
-@pytest.mark.parametrize('test_input,expected_message', [
-    (
-            "let x  3;", ''
-    ),
-    (
-            "let  = 3;", ''
-    ),
-    (
-            "let  = ;", ''
-    )
-])
+@pytest.mark.parametrize(
+    "test_input,expected_message",
+    [("let x  3;", ""), ("let  = 3;", ""), ("let  = ;", "")],
+)
 def test_parse_wrong_let_statements(test_input, expected_message):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -92,14 +101,17 @@ def test_parse_wrong_let_statements(test_input, expected_message):
     assert parser.errors
 
 
-@pytest.mark.parametrize('test_input,expected', [
-    ('foobar;', 'foobar'),
-    ('baby;', 'baby'),
-    ('5;', '5'),
-    ('7;', '7'),
-    ('true;', True),
-    ('false;', False)
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("foobar;", "foobar"),
+        ("baby;", "baby"),
+        ("5;", "5"),
+        ("7;", "7"),
+        ("true;", True),
+        ("false;", False),
+    ],
+)
 def test_parse_single_line_expression_statement(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -112,10 +124,13 @@ def test_parse_single_line_expression_statement(test_input, expected):
     assert identifier.value == expected
 
 
-@pytest.mark.parametrize('test_input,expected', [
-    ('!5;', ['!', '5']),
-    ('-7;', ['-', '7']),
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("!5;", ["!", "5"]),
+        ("-7;", ["-", "7"]),
+    ],
+)
 def test_parse_single_line_prefix_expression(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -129,16 +144,19 @@ def test_parse_single_line_prefix_expression(test_input, expected):
     assert identifier.right.token_literal() == expected[1]
 
 
-@pytest.mark.parametrize('test_input,expected', [
-    ('5 + 5;', ['5', '+', '5']),
-    ('5 - 5;', ['5', '-', '5']),
-    ('5 * 5;', ['5', '*', '5']),
-    ('5 / 5;', ['5', '/', '5']),
-    ('5 > 5;', ['5', '>', '5']),
-    ('5 < 5;', ['5', '<', '5']),
-    ('5 == 5;', ['5', '==', '5']),
-    ('5 != 5;', ['5', '!=', '5']),
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("5 + 5;", ["5", "+", "5"]),
+        ("5 - 5;", ["5", "-", "5"]),
+        ("5 * 5;", ["5", "*", "5"]),
+        ("5 / 5;", ["5", "/", "5"]),
+        ("5 > 5;", ["5", ">", "5"]),
+        ("5 < 5;", ["5", "<", "5"]),
+        ("5 == 5;", ["5", "==", "5"]),
+        ("5 != 5;", ["5", "!=", "5"]),
+    ],
+)
 def test_parse_single_line_infix_expression(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -153,14 +171,17 @@ def test_parse_single_line_infix_expression(test_input, expected):
     assert identifier.right.token_literal() == expected[2]
 
 
-@pytest.mark.parametrize('test_input,expected', [
-    ('a + b + c;', '((a+b)+c)'),
-    ('a + b - c;', '((a+b)-c)'),
-    ('a + b / c;', '(a+(b/c))'),
-    ('a + b / c + d * e', '((a+(b/c))+(d*e))'),
-    ('3 > 5 == false', '((3>5)==false)'),
-    ('true == 3 < 5', '(true==(3<5))')
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("a + b + c;", "((a+b)+c)"),
+        ("a + b - c;", "((a+b)-c)"),
+        ("a + b / c;", "(a+(b/c))"),
+        ("a + b / c + d * e", "((a+(b/c))+(d*e))"),
+        ("3 > 5 == false", "((3>5)==false)"),
+        ("true == 3 < 5", "(true==(3<5))"),
+    ],
+)
 def test_parse_multiple_lines_infix_expression(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -172,10 +193,13 @@ def test_parse_multiple_lines_infix_expression(test_input, expected):
     assert str(stmt) == expected
 
 
-@pytest.mark.parametrize('test_input,expected', [
-    ('- 5 * (3 + 2);', '((-5)*(3+2))'),
-    ('3 + (2 - 5) * 2;', '(3+((2-5)*2))'),
-])
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("- 5 * (3 + 2);", "((-5)*(3+2))"),
+        ("3 + (2 - 5) * 2;", "(3+((2-5)*2))"),
+    ],
+)
 def test_parse_grouped_expression(test_input, expected):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -187,11 +211,16 @@ def test_parse_grouped_expression(test_input, expected):
     assert str(stmt) == expected
 
 
-@pytest.mark.parametrize('test_input,expected_cond,expected_consequence,expected_alternatives', [
-    ('if (x<y) {y};', '(x<y)', 'y', None),
-    ('if (x<y) {y} else {x}', '(x<y)', 'y', 'x'),
-])
-def test_parse_if_expression(test_input, expected_cond, expected_consequence, expected_alternatives):
+@pytest.mark.parametrize(
+    "test_input,expected_cond,expected_consequence,expected_alternatives",
+    [
+        ("if (x<y) {y};", "(x<y)", "y", None),
+        ("if (x<y) {y} else {x}", "(x<y)", "y", "x"),
+    ],
+)
+def test_parse_if_expression(
+    test_input, expected_cond, expected_consequence, expected_alternatives
+):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
     program = parser.parse_program()
@@ -207,9 +236,12 @@ def test_parse_if_expression(test_input, expected_cond, expected_consequence, ex
     assert str(if_stmt.alternative) == str(expected_alternatives)
 
 
-@pytest.mark.parametrize('test_input,expected_parameters,expected_body', [
-    ('fn (x,y,z) {x+y+z}', ['x', 'y', 'z'], '((x+y)+z)'),
-])
+@pytest.mark.parametrize(
+    "test_input,expected_parameters,expected_body",
+    [
+        ("fn (x,y,z) {x+y+z}", ["x", "y", "z"], "((x+y)+z)"),
+    ],
+)
 def test_parse_function_literal(test_input, expected_parameters, expected_body):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
@@ -229,13 +261,18 @@ def test_parse_function_literal(test_input, expected_parameters, expected_body):
     assert str(function_literal.body) == expected_body
 
 
-@pytest.mark.parametrize('test_input,expected_expression,expected_arguments', [
-    ('abc()', 'abc', []),
-    ('abc(1)', 'abc', ['1']),
-    ('abc(a,b+2)', 'abc', ['a', '(b+2)']),
-    ('abc(1+2,a,b)', 'abc', ['(1+2)', 'a', 'b']),
-])
-def test_parse_single_call_expression(test_input, expected_expression, expected_arguments):
+@pytest.mark.parametrize(
+    "test_input,expected_expression,expected_arguments",
+    [
+        ("abc()", "abc", []),
+        ("abc(1)", "abc", ["1"]),
+        ("abc(a,b+2)", "abc", ["a", "(b+2)"]),
+        ("abc(1+2,a,b)", "abc", ["(1+2)", "a", "b"]),
+    ],
+)
+def test_parse_single_call_expression(
+    test_input, expected_expression, expected_arguments
+):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
     program = parser.parse_program()

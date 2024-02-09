@@ -3,43 +3,43 @@ from typing import Iterable, Union
 
 
 class TokenType(Enum):
-    ILLEGAL = 'ILLEGAL'
-    EOF = 'EOF'
+    ILLEGAL = "ILLEGAL"
+    EOF = "EOF"
 
-    IDENT = 'IDENT'
-    INT = 'INT'
+    IDENT = "IDENT"
+    INT = "INT"
 
-    ASSIGN = '='
-    PLUS = '+'
-    MINUS = '-'
-    BANG = '!'
-    ASTERISK = '*'
-    SLASH = '/'
+    ASSIGN = "="
+    PLUS = "+"
+    MINUS = "-"
+    BANG = "!"
+    ASTERISK = "*"
+    SLASH = "/"
 
-    LT = '<'
-    GT = '>'
+    LT = "<"
+    GT = ">"
 
-    EQUAL = '=='
-    NOT_EQUAL = '!='
+    EQUAL = "=="
+    NOT_EQUAL = "!="
 
     COMMA = ","
-    SEMICOLON = ';'
+    SEMICOLON = ";"
 
-    LPAREN = '('
-    RPAREN = ')'
-    LBRACE = '{'
-    RBRACE = '}'
+    LPAREN = "("
+    RPAREN = ")"
+    LBRACE = "{"
+    RBRACE = "}"
 
-    FUNCTION = 'fn'
-    LET = 'let'
-    TRUE = 'true'
-    FALSE = 'false'
-    IF = 'if'
-    ELSE = 'else'
-    RETURN = 'return'
+    FUNCTION = "fn"
+    LET = "let"
+    TRUE = "true"
+    FALSE = "false"
+    IF = "if"
+    ELSE = "else"
+    RETURN = "return"
 
     @classmethod
-    def symbols(cls) -> Iterable['TokenType']:
+    def symbols(cls) -> Iterable["TokenType"]:
         return (
             TokenType.ASSIGN,
             TokenType.PLUS,
@@ -60,37 +60,40 @@ class TokenType(Enum):
         )
 
     @classmethod
-    def reserved_words(cls) -> Iterable['TokenType']:
-        """ 예약어
+    def reserved_words(cls) -> Iterable["TokenType"]:
+        """예약어
 
         :return:
         """
         return (
-            TokenType.FUNCTION, TokenType.LET,
-            TokenType.TRUE, TokenType.FALSE,
-            TokenType.IF, TokenType.ELSE,
-            TokenType.RETURN
+            TokenType.FUNCTION,
+            TokenType.LET,
+            TokenType.TRUE,
+            TokenType.FALSE,
+            TokenType.IF,
+            TokenType.ELSE,
+            TokenType.RETURN,
         )
 
     def __hash__(self):
         return hash(self.value)
 
-    def __eq__(self, other: Union['TokenType', str]):
+    def __eq__(self, other: Union["TokenType", str]):
         if isinstance(other, str):
             return self.value == other
         return super().__eq__(other)
 
 
 class Token:
-    """ Lexical Analysis를 통해, 소스코드에서 나온 단어를 토큰 열로 변환
-    """
+    """Lexical Analysis를 통해, 소스코드에서 나온 단어를 토큰 열로 변환"""
+
     type: TokenType
     literal: str
 
     def __init__(self, word: str):
         if not word:
             self.type = TokenType.EOF
-            self.literal = ''
+            self.literal = ""
             return
 
         for symbol in TokenType.symbols():

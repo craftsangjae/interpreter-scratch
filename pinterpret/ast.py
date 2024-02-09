@@ -12,8 +12,8 @@ class Node(ABC):
 
 
 class Expression(Node):
-    """표현식
-    """
+    """표현식"""
+
     pass
 
 
@@ -55,8 +55,8 @@ class InfixExpression(Expression):
 
 
 class IntegerExpression(Expression):
-    """ 숫자형 표현
-    """
+    """숫자형 표현"""
+
     token: Token
     value: int
 
@@ -72,14 +72,14 @@ class IntegerExpression(Expression):
 
 
 class BoolExpression(Expression):
-    """ 불 리터럴
-    """
+    """불 리터럴"""
+
     token: Token
     value: bool
 
     def __init__(self, token: Token):
         self.token = token
-        self.value = self.token.literal.lower() == 'true'
+        self.value = self.token.literal.lower() == "true"
 
     def token_literal(self) -> str:
         return self.token.literal
@@ -103,54 +103,57 @@ class CallExpression(Expression):
 
     def __str__(self):
         args = ",".join([str(arg) for arg in self.arguments])
-        return f'{self.function.token_literal()}({args})'
+        return f"{self.function.token_literal()}({args})"
 
 
 class Statement(Node):
-    """ 명령문
+    """명령문
 
     명령문 vs 표현식
     명령문 : 값을 만들지 않음 (ex : return 5;)
 
     표현식 : 값을 만듦 (ex: add(5,3);)
     """
+
     pass
 
 
 class BlockStatement(Statement):
-    """
-    """
+    """ """
+
     token: Token
     statements: List[Statement]
 
     def __init__(self, token: Token, statements: List[Statement]):
         self.token = token
-        self.value = self.token.literal.lower() == 'true'
+        self.value = self.token.literal.lower() == "true"
         self.statements = statements
 
     def token_literal(self) -> str:
         return self.token.literal
 
     def __str__(self):
-        output = ''
+        output = ""
         for stmt in self.statements:
-            output += str(stmt) + '\n'
+            output += str(stmt) + "\n"
         return output.strip()
 
 
 class IfExpression(Expression):
-    """ 조건 표현문
-    """
+    """조건 표현문"""
+
     token: Token
     condition: Expression
     consequence: BlockStatement
     alternative: Optional[BlockStatement]
 
-    def __init__(self,
-                 token: Token,
-                 condition: Expression,
-                 consequence: BlockStatement,
-                 alternative: BlockStatement = None):
+    def __init__(
+        self,
+        token: Token,
+        condition: Expression,
+        consequence: BlockStatement,
+        alternative: BlockStatement = None,
+    ):
         self.token = token
         self.condition = condition
         self.consequence = consequence
@@ -167,8 +170,8 @@ class IfExpression(Expression):
 
 
 class Identifier(Expression):
-    """ 식별자 노드
-    """
+    """식별자 노드"""
+
     token: Token
     value: str
 
@@ -188,7 +191,9 @@ class FunctionLiteral(Expression):
     parameters: List[Identifier]
     body: BlockStatement
 
-    def __init__(self, token: Token, parameters: List[Identifier], body: BlockStatement):
+    def __init__(
+        self, token: Token, parameters: List[Identifier], body: BlockStatement
+    ):
         self.token = token
         self.parameters = parameters
         self.body = body
@@ -197,8 +202,8 @@ class FunctionLiteral(Expression):
         return self.token.literal
 
     def __str__(self):
-        params = '(' + ",".join([p.token_literal() for p in self.parameters]) + ')'
-        return f'fn {params} {{{self.body}}}'
+        params = "(" + ",".join([p.token_literal() for p in self.parameters]) + ")"
+        return f"fn {params} {{{self.body}}}"
 
 
 class LetStatement(Statement):
@@ -208,6 +213,7 @@ class LetStatement(Statement):
     x : name(identifier)
     5 + 2 : value(Expression)
     """
+
     token: Token
     name: Identifier
     value: Expression
@@ -228,6 +234,7 @@ class ReturnStatement(Statement):
     """
     ex) return 5;
     """
+
     token: Token
     return_value: Expression
 
@@ -272,10 +279,10 @@ class Program(Node):
         if self.statements:
             return self.statements[0].token_literal()
         else:
-            return ''
+            return ""
 
     def __str__(self):
-        output = ''
+        output = ""
         for stmt in self.statements:
-            output += str(stmt) + '\n'
+            output += str(stmt) + "\n"
         return output.strip()

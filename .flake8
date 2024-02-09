@@ -9,4 +9,7 @@ exclude =
     .env
 
 ignore =
-        E126, E501
+        E126,
+        E501,
+        E203,
+        W503

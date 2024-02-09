@@ -16,12 +16,27 @@ INPUT               OUTPUT
 -3 + 2 * 7;  ==>    ((-3) + (2 * 7));
 
 """
+
 from enum import IntEnum
 from typing import Optional, List, Dict, Callable
 
-from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
-    ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression, BoolExpression, IfExpression, \
-    BlockStatement, FunctionLiteral, CallExpression
+from pinterpret.ast import (
+    Program,
+    Statement,
+    LetStatement,
+    Identifier,
+    ReturnStatement,
+    Expression,
+    ExpressionStatement,
+    IntegerExpression,
+    PrefixExpression,
+    InfixExpression,
+    BoolExpression,
+    IfExpression,
+    BlockStatement,
+    FunctionLiteral,
+    CallExpression,
+)
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -39,15 +54,13 @@ class OperatorPrecedence(IntEnum):
 PRECEDENCE_RELATION = {
     TokenType.EQUAL: OperatorPrecedence.EQUALS,
     TokenType.NOT_EQUAL: OperatorPrecedence.EQUALS,
-
     TokenType.LT: OperatorPrecedence.LESSGREATER,
     TokenType.GT: OperatorPrecedence.LESSGREATER,
-
     TokenType.PLUS: OperatorPrecedence.SUM,
     TokenType.MINUS: OperatorPrecedence.SUM,
     TokenType.SLASH: OperatorPrecedence.PRODUCT,
     TokenType.ASTERISK: OperatorPrecedence.PREFIX,
-    TokenType.LPAREN: OperatorPrecedence.CALL
+    TokenType.LPAREN: OperatorPrecedence.CALL,
 }
 
 # 전위함수 파싱 로직
@@ -78,19 +91,36 @@ class Parser:
         self.infix_parse_fns = {}
 
         # register identifier
-        [self.register_prefix(t, self.parse_identifier) for t in [TokenType.IDENT, TokenType.INT]]
+        [
+            self.register_prefix(t, self.parse_identifier)
+            for t in [TokenType.IDENT, TokenType.INT]
+        ]
 
         # register bool literal
-        [self.register_prefix(t, self.parse_bool) for t in [TokenType.TRUE, TokenType.FALSE]]
+        [
+            self.register_prefix(t, self.parse_bool)
+            for t in [TokenType.TRUE, TokenType.FALSE]
+        ]
 
         # register prefix expression
-        [self.register_prefix(t, self.parse_prefix_expression) for t in [TokenType.BANG, TokenType.MINUS]]
+        [
+            self.register_prefix(t, self.parse_prefix_expression)
+            for t in [TokenType.BANG, TokenType.MINUS]
+        ]
 
         # register infix expression
         [
             self.register_infix(t, self.parse_infix_expression)
-            for t in [TokenType.PLUS, TokenType.MINUS, TokenType.SLASH, TokenType.ASTERISK,
-                      TokenType.LT, TokenType.GT, TokenType.EQUAL, TokenType.NOT_EQUAL, ]
+            for t in [
+                TokenType.PLUS,
+                TokenType.MINUS,
+                TokenType.SLASH,
+                TokenType.ASTERISK,
+                TokenType.LT,
+                TokenType.GT,
+                TokenType.EQUAL,
+                TokenType.NOT_EQUAL,
+            ]
         ]
 
         # register group expression
@@ -116,10 +146,14 @@ class Parser:
 
         return program
 
-    def register_prefix(self, token_type: TokenType, prefix_parse_func: prefix_parse_ftype):
+    def register_prefix(
+        self, token_type: TokenType, prefix_parse_func: prefix_parse_ftype
+    ):
         self.prefix_parse_fns[token_type] = prefix_parse_func
 
-    def register_infix(self, token_type: TokenType, infix_parse_func: infix_parse_ftype):
+    def register_infix(
+        self, token_type: TokenType, infix_parse_func: infix_parse_ftype
+    ):
         self.infix_parse_fns[token_type] = infix_parse_func
 
     def next_token(self):
@@ -168,7 +202,7 @@ class Parser:
         return ReturnStatement(return_token, expression)
 
     def parse_expression_statement(self) -> Optional[ExpressionStatement]:
-        """ entrypoint for parsing expression.
+        """entrypoint for parsing expression.
         :return:
         """
         token = self.ct
@@ -196,7 +230,7 @@ class Parser:
         return False
 
     def peek_error(self, t: TokenType):
-        error = f'expected next token to be {t.value}, got {self.nt.type} instead'
+        error = f"expected next token to be {t.value}, got {self.nt.type} instead"
         self.errors.append(error)
 
     def curr_precedence(self) -> OperatorPrecedence:
@@ -208,7 +242,7 @@ class Parser:
         return PRECEDENCE_RELATION.get(self.nt.type, OperatorPrecedence.LOWEST)
 
     def parse_expression(self, precedence: OperatorPrecedence) -> Optional[Expression]:
-        """ 프렛파서에서 핵심이 되는 로직
+        """프렛파서에서 핵심이 되는 로직
         case 1. 'a + b * c;'
         1) ct -> a을 바라봄
         2) a에 parse_identifier 적용
@@ -240,7 +274,10 @@ class Parser:
             self.errors.append(f"no prefix parse function for {self.ct.type} found")
             return None
 
-        while not self.next_token_is(TokenType.SEMICOLON) and precedence < self.next_precedence():
+        while (
+            not self.next_token_is(TokenType.SEMICOLON)
+            and precedence < self.next_precedence()
+        ):
             infix_function = self.infix_parse_fns.get(self.nt.type, None)
             if infix_function is None:
                 return l_expr
@@ -312,7 +349,9 @@ class Parser:
 
         self.next_token()
         stmts = []
-        while not (self.curr_token_is(TokenType.RBRACE) or self.curr_token_is(TokenType.EOF)):
+        while not (
+            self.curr_token_is(TokenType.RBRACE) or self.curr_token_is(TokenType.EOF)
+        ):
             stmt = self.parse_statement()
             if stmt:
                 stmts.append(stmt)

@@ -1,6 +1,6 @@
 from lexer import Lexer
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     text = input(">>> ")
     while text:
         lexer = Lexer(text)

@@ -5,6 +5,7 @@ class Lexer:
     """
     read source codes and return the array of tokens.
     """
+
     input: str
     pos: int  # current index of input string
     rpos: int  # next index of input string
@@ -14,7 +15,7 @@ class Lexer:
         self.input = input
         self.pos = 0
         self.rpos = 0
-        self.char = ''
+        self.char = ""
         self.read_char()
 
     @property
@@ -28,7 +29,7 @@ class Lexer:
 
     def peek_char(self):
         if self.rpos >= len(self.input):
-            return ''
+            return ""
         else:
             return self.input[self.rpos]
 
@@ -42,19 +43,19 @@ class Lexer:
             # integer or float
             text = self.read_integer()
         else:
-            if self.char == '=' and self.peek_char() == '=':
+            if self.char == "=" and self.peek_char() == "=":
                 self.read_char()
-                text = '=='
-            elif self.char == '!' and self.peek_char() == '=':
+                text = "=="
+            elif self.char == "!" and self.peek_char() == "=":
                 self.read_char()
-                text = '!='
+                text = "!="
             else:
                 text = self.char
             self.read_char()
         return Token(text)
 
     def skip_whitespace(self):
-        while self.char in {' ', '\n', '\t', '\r'}:
+        while self.char in {" ", "\n", "\t", "\r"}:
             self.read_char()
 
     def read_identifier(self):
@@ -63,12 +64,12 @@ class Lexer:
             self.read_char()
             if not self.char.isalnum():
                 break
-        return self.input[pos:self.pos]
+        return self.input[pos : self.pos]
 
     def read_integer(self):
         pos = self.pos
         while True:
             self.read_char()
-            if not (self.char.isnumeric() or self.char == '.'):
+            if not (self.char.isnumeric() or self.char == "."):
                 break
-        return self.input[pos:self.pos]
+        return self.input[pos : self.pos]

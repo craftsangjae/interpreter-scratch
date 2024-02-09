@@ -195,8 +195,6 @@ class Parser:
         self.next_token()
         expression = self.parse_expression(OperatorPrecedence.LOWEST)
 
-        self.next_token()
-
         if self.next_token_is(TokenType.SEMICOLON):
             self.next_token()
 

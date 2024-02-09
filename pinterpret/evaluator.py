@@ -15,6 +15,8 @@ from pinterpret.ast import (
     LetStatement,
     Identifier,
     FunctionLiteral,
+    CallExpression,
+    Expression,
 )
 from pinterpret.common import Object
 from pinterpret.environment import Environment
@@ -73,6 +75,16 @@ def evaluate(node: Node, env: Environment) -> Object:
     elif isinstance(node, BoolLiteral):
         return BooleanObj(node.value)
 
+    elif isinstance(node, CallExpression):
+        function: FunctionObj = evaluate(node.function, env)
+        if isinstance(function, ErrorObj):
+            return function
+
+        args = evaluate_expressions(node.arguments, env)
+        if len(args) == 1 and isinstance(args[0], ErrorObj):
+            return args[0]
+        return apply_function(function, args)
+
     return NullObj()
 
 
@@ -83,6 +95,16 @@ def evaluate_statements(stmts: List[Statement], env: Environment) -> Object:
         if isinstance(result, ReturnObj) or isinstance(result, ErrorObj):
             return result
     return result
+
+
+def evaluate_expressions(exprs: List[Expression], env: Environment) -> List[Object]:
+    results = []
+    for expr in exprs:
+        result = evaluate(expr, env)
+        if isinstance(result, ErrorObj):
+            return [result]
+        results.append(result)
+    return results
 
 
 def evaluate_bang_prefix_expression(right_obj: Object) -> Object:
@@ -186,6 +208,23 @@ def evaluate_return_statement(node: ReturnStatement, env: Environment) -> Object
     if isinstance(value, ErrorObj):
         return value
     return ReturnObj(value)
+
+
+def apply_function(fn: FunctionObj, args: List[Object]) -> Object:
+    extended_env = extend_function_env(fn, args)
+    evaluated = evaluate(fn.body, extended_env)
+
+    if isinstance(evaluated, ReturnObj):
+        return evaluated.value
+    return evaluated
+
+
+def extend_function_env(fn: FunctionObj, args: List[Object]) -> Environment:
+    extended_env = Environment(fn.env)
+
+    for param, arg in zip(fn.parameters, args):
+        extended_env.set(param.value, arg)
+    return extended_env
 
 
 def is_truthy(value: Object):

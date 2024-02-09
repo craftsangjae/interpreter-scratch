@@ -1,5 +1,6 @@
 import pytest
 
+from pinterpret.common import Object
 from pinterpret.environment import Environment
 from pinterpret.evaluator import evaluate
 from pinterpret.lexer import Lexer
@@ -132,3 +133,26 @@ def test_evaluate_function_literal(test_input, expected_params, expected_body):
 
     for body, expected in zip(result.body.statements, expected_body):
         assert str(body) == expected
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("let add = fn(a,b) { return a+b }; add(2,3);", 5),
+        ("let add = fn(a,b) { return a+b }; add(2,3) + add(5,7);", 17),
+        ("let add = fn(a,b) { return a+b }; add(add(2,3),add(5,7));", 17),
+        (
+            "let add = fn(a,b) { return a+b }; let mul = fn(a,b) {a*b;}; mul(add(2,3),add(5,7));",
+            60,
+        ),
+    ],
+)
+def test_evaluate_call_expression(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+
+    program = parser.parse_program()
+
+    result: Object = evaluate(program, Environment())
+
+    assert result.inspect() == str(expected)

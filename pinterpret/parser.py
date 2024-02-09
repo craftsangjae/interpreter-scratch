@@ -147,26 +147,25 @@ class Parser:
         if not self.expect_peek(TokenType.ASSIGN):
             return
 
-        while not self.curr_token_is(TokenType.SEMICOLON):
+        self.next_token()
+        expression = self.parse_expression(OperatorPrecedence.LOWEST)
+
+        if self.next_token_is(TokenType.SEMICOLON):
             self.next_token()
 
-            if self.curr_token_is(TokenType.EOF):
-                self.peek_error(TokenType.SEMICOLON)
-                break
-
-        return LetStatement(let_token, identifier, None)
+        return LetStatement(let_token, identifier, expression)
 
     def parse_return_statement(self) -> Optional[ReturnStatement]:
         return_token = self.ct
 
-        while not self.curr_token_is(TokenType.SEMICOLON):
+        self.next_token()
+        expression = self.parse_expression(OperatorPrecedence.LOWEST)
+
+        self.next_token()
+        if self.curr_token_is(TokenType.SEMICOLON):
             self.next_token()
 
-            if self.curr_token_is(TokenType.EOF):
-                self.peek_error(TokenType.SEMICOLON)
-                break
-
-        return ReturnStatement(return_token, None)
+        return ReturnStatement(return_token, expression)
 
     def parse_expression_statement(self) -> Optional[ExpressionStatement]:
         """ entrypoint for parsing expression.

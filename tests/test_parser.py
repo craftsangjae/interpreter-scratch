@@ -41,6 +41,38 @@ def test_parse_let_and_return_statements(test_input, expected_identifiers, expec
             assert False, f"{i}th stmt fails to match"
 
 
+@pytest.mark.parametrize('test_input,expected_name,expected_value', [
+    ('let x = 3 + 7', 'x', '(3+7)'),
+    ('let y = a + b * c', 'y', '(a+(b*c))'),
+])
+def test_parse_single_let_statement(test_input, expected_name, expected_value):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    expr: LetStatement = program.statements[0]
+    assert str(expr.name) == expected_name
+    assert str(expr.value) == expected_value
+
+
+@pytest.mark.parametrize('test_input,expected_value', [
+    ('return 3+7;', '(3+7)'),
+    ('return a+b', '(a+b)'),
+    ('return a;', 'a'),
+])
+def test_parse_single_return_statement(test_input, expected_value):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    expr: ReturnStatement = program.statements[0]
+    assert str(expr.return_value) == expected_value
+
+
 @pytest.mark.parametrize('test_input,expected_message', [
     (
             "let x  3;", ''
@@ -50,9 +82,6 @@ def test_parse_let_and_return_statements(test_input, expected_identifiers, expec
     ),
     (
             "let  = ;", ''
-    ),
-    (
-            "let x = 3", ''
     )
 ])
 def test_parse_wrong_let_statements(test_input, expected_message):

@@ -74,6 +74,8 @@ def test_evaluate_if_expression(test_input, expected):
         ("5;return 3", 3),
         ("5;return 3; 7;", 3),
         ("5;return 3;return 5; 4;", 3),
+        ("let a = 5;a;", 5),
+        ("let a = 5;a + a + 3;", 13),
     ],
 )
 def test_evaluate_return_statements(test_input, expected):
@@ -95,6 +97,7 @@ def test_evaluate_return_statements(test_input, expected):
             "if(5==false) {3}",
             "Error: type mismatch : ObjectType.Integer == ObjectType.Boolean",
         ),
+        ("hello", "Error: identifier not found : hello"),
     ],
 )
 def test_handle_error(test_input, expected):

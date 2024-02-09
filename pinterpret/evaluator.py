@@ -12,35 +12,51 @@ from pinterpret.ast import (
     IfExpression,
     BlockStatement,
     ReturnStatement,
+    LetStatement,
+    Identifier,
 )
+from pinterpret.environment import Environment
 from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj, ReturnObj, ErrorObj
 from pinterpret.token import TokenType
 
 
-def evaluate(node: Node) -> Object:
+def evaluate(node: Node, env: Environment) -> Object:
     if isinstance(node, Program):
-        return evaluate_statements(node.statements)
+        return evaluate_statements(node.statements, env)
 
     elif isinstance(node, BlockStatement):
-        return evaluate_statements(node.statements)
+        return evaluate_statements(node.statements, env)
 
     elif isinstance(node, ExpressionStatement):
-        return evaluate(node.expression)
+        return evaluate(node.expression, env)
 
     elif isinstance(node, PrefixExpression):
-        return evaluate_prefix_expression(node)
+        return evaluate_prefix_expression(node, env)
 
     elif isinstance(node, InfixExpression):
-        return evaluate_infix_expression(node)
+        return evaluate_infix_expression(node, env)
 
     elif isinstance(node, IfExpression):
-        return evaluate_if_expression(node)
+        return evaluate_if_expression(node, env)
 
     elif isinstance(node, ReturnStatement):
-        return evaluate_return_statement(node)
+        return evaluate_return_statement(node, env)
+
+    elif isinstance(node, LetStatement):
+        value = evaluate(node.value, env)
+        if isinstance(value, ErrorObj):
+            return value
+        env.set(node.name.value, value)
 
     elif isinstance(node, IntegerLiteral):
         return IntegerObj(node.value)
+
+    elif isinstance(node, Identifier):
+        val, ok = env.get(node.value)
+        if ok:
+            return val
+        else:
+            return ErrorObj("identifier not found : " + node.value)
 
     elif isinstance(node, BoolLiteral):
         return BooleanObj(node.value)
@@ -48,10 +64,10 @@ def evaluate(node: Node) -> Object:
     return NullObj()
 
 
-def evaluate_statements(stmts: List[Statement]) -> Object:
+def evaluate_statements(stmts: List[Statement], env: Environment) -> Object:
     result = NullObj()
     for stmt in stmts:
-        result = evaluate(stmt)
+        result = evaluate(stmt, env)
         if isinstance(result, ReturnObj) or isinstance(result, ErrorObj):
             return result
     return result
@@ -74,8 +90,8 @@ def evaluate_minus_prefix_expression(right_obj: Object) -> Object:
     return ErrorObj(f"not supported : - {right_obj.type}")
 
 
-def evaluate_prefix_expression(node: PrefixExpression):
-    right_obj = evaluate(node.right)
+def evaluate_prefix_expression(node: PrefixExpression, env: Environment):
+    right_obj = evaluate(node.right, env)
 
     if isinstance(right_obj, ErrorObj):
         return right_obj
@@ -88,9 +104,9 @@ def evaluate_prefix_expression(node: PrefixExpression):
         return ErrorObj(f"not supported : {node.operator} {right_obj.type}")
 
 
-def evaluate_infix_expression(node: InfixExpression) -> Object:
-    left_obj = evaluate(node.left)
-    right_obj = evaluate(node.right)
+def evaluate_infix_expression(node: InfixExpression, env: Environment) -> Object:
+    left_obj = evaluate(node.left, env)
+    right_obj = evaluate(node.right, env)
 
     if isinstance(left_obj, ErrorObj):
         return left_obj
@@ -141,20 +157,20 @@ def evaluate_infix_expression(node: InfixExpression) -> Object:
         )
 
 
-def evaluate_if_expression(node: IfExpression) -> Object:
-    value = evaluate(node.condition)
+def evaluate_if_expression(node: IfExpression, env: Environment) -> Object:
+    value = evaluate(node.condition, env)
     if isinstance(value, ErrorObj):
         return value
 
     if is_truthy(value):
-        return evaluate(node.consequence)
+        return evaluate(node.consequence, env)
     elif node.alternative:
-        return evaluate(node.alternative)
+        return evaluate(node.alternative, env)
     return NullObj()
 
 
-def evaluate_return_statement(node: ReturnStatement) -> Object:
-    value = evaluate(node.return_value)
+def evaluate_return_statement(node: ReturnStatement, env: Environment) -> Object:
+    value = evaluate(node.return_value, env)
     if isinstance(value, ErrorObj):
         return value
     return ReturnObj(value)

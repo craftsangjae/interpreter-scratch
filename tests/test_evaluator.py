@@ -23,6 +23,13 @@ from pinterpret.parser import Parser
         ("5/2", 2),
         ("(5+2)*3", 21),
         ("2+7*3/7*10", 32),
+        ("5<2", False),
+        ("5<7", True),
+        ("5==5", True),
+        ("5!=7", True),
+        ("5!=5", False),
+        ("5<3 == true", False),
+        ("5<7 == true", True),
     ],
 )
 def test_evaluate_single_statement(test_input, expected):

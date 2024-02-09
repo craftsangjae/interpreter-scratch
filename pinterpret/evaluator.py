@@ -75,7 +75,7 @@ def evaluate_infix_expression(node: InfixExpression) -> Object:
     left_obj = evaluate(node.left)
     right_obj = evaluate(node.right)
 
-    if node.operator in ("+", "-", "*", "/"):
+    if node.operator in ("+", "-", "*", "/", "<", ">"):
         if not (isinstance(left_obj, IntegerObj) and isinstance(right_obj, IntegerObj)):
             return NullObj()
         if node.operator == "+":
@@ -86,9 +86,24 @@ def evaluate_infix_expression(node: InfixExpression) -> Object:
             return IntegerObj(left_obj.value * right_obj.value)
         elif node.operator == "/":
             return IntegerObj(left_obj.value // right_obj.value)
+        elif node.operator == "<":
+            return BooleanObj(left_obj.value < right_obj.value)
+        elif node.operator == ">":
+            return BooleanObj(left_obj.value > right_obj.value)
         else:
             return NullObj()
-    elif node.operator in ("<", ">", "==", "!="):
-        pass
+    elif node.operator in ("==", "!="):
+        if not (
+            (isinstance(left_obj, IntegerObj) and isinstance(right_obj, IntegerObj))
+            or (isinstance(left_obj, BooleanObj) and isinstance(right_obj, BooleanObj))
+        ):
+            return NullObj()
+
+        if node.operator == "==":
+            return BooleanObj(left_obj.value == right_obj.value)
+        elif node.operator == "!=":
+            return BooleanObj(left_obj.value != right_obj.value)
+        else:
+            return NullObj()
     else:
         return NullObj()

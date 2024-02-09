@@ -58,7 +58,7 @@ def test_parse_let_and_return_statements(test_input, expected_identifiers, expec
 def test_parse_wrong_let_statements(test_input, expected_message):
     lexer = Lexer(test_input)
     parser = Parser(lexer)
-    program = parser.parse_program()
+    parser.parse_program()
 
     assert parser.errors
 

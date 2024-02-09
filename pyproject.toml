@@ -11,6 +11,7 @@ python = "3.9.17"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
+flake8 = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,12 @@
+[flake8]
+exclude =
+    .git,
+    .gitignore,
+    *.pot,
+    *.py[co],
+    __pycache__,
+    .venv,
+    .env
+
+ignore =
+        E126, E501

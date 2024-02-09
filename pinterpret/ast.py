@@ -99,6 +99,55 @@ class BoolExpression(Expression):
         return self.token.literal
 
 
+class BlockStatement(Statement):
+    """
+    """
+    token: Token
+    statements: List[Statement]
+
+    def __init__(self, token: Token, statements: List[Statement]):
+        self.token = token
+        self.value = self.token.literal.lower() == 'true'
+        self.statements = statements
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        output = ''
+        for stmt in self.statements:
+            output += str(stmt) + '\n'
+        return output.strip()
+
+
+class IfExpression(Expression):
+    """ 조건 표현문
+    """
+    token: Token
+    condition: Expression
+    consequence: BlockStatement
+    alternative: Optional[BlockStatement]
+
+    def __init__(self,
+                 token: Token,
+                 condition: Expression,
+                 consequence: BlockStatement,
+                 alternative: BlockStatement = None):
+        self.token = token
+        self.condition = condition
+        self.consequence = consequence
+        self.alternative = alternative
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        if self.alternative:
+            return f"if {self.condition} \n{{{self.consequence}}} else {{{self.alternative}}}"
+        else:
+            return f"if {self.condition} \n{{{self.consequence}}}"
+
+
 class Identifier(Expression):
     """ 식별자 노드
     """

@@ -2,7 +2,7 @@ import pytest
 
 from pinterpret.ast import (
     LetStatement, ReturnStatement, ExpressionStatement,
-    Identifier, PrefixExpression, InfixExpression
+    Identifier, PrefixExpression, InfixExpression, IfExpression
 )
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
@@ -156,3 +156,23 @@ def test_parse_grouped_expression(test_input, expected):
 
     stmt: ExpressionStatement = program.statements[0]
     assert str(stmt) == expected
+
+
+@pytest.mark.parametrize('test_input,expected_cond,expected_consequence,expected_alternatives', [
+    ('if (x<y) {y};', '(x<y)', 'y', None),
+    ('if (x<y) {y} else {x}', '(x<y)', 'y', 'x'),
+])
+def test_parse_if_expression(test_input, expected_cond, expected_consequence, expected_alternatives):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    if_stmt: IfExpression = stmt.expression
+
+    assert if_stmt.token.type == TokenType.IF
+    assert str(if_stmt.condition) == expected_cond
+    assert str(if_stmt.consequence) == expected_consequence
+    assert str(if_stmt.alternative) == str(expected_alternatives)

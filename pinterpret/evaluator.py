@@ -9,6 +9,8 @@ from pinterpret.ast import (
     Statement,
     PrefixExpression,
     InfixExpression,
+    IfExpression,
+    BlockStatement,
 )
 from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj
 from pinterpret.token import TokenType
@@ -16,6 +18,9 @@ from pinterpret.token import TokenType
 
 def evaluate(node: Node) -> Object:
     if isinstance(node, Program):
+        return evaluate_statements(node.statements)
+
+    elif isinstance(node, BlockStatement):
         return evaluate_statements(node.statements)
 
     elif isinstance(node, ExpressionStatement):
@@ -26,6 +31,9 @@ def evaluate(node: Node) -> Object:
 
     elif isinstance(node, InfixExpression):
         return evaluate_infix_expression(node)
+
+    elif isinstance(node, IfExpression):
+        return evaluate_if_expression(node)
 
     elif isinstance(node, IntegerLiteral):
         return IntegerObj(node.value)
@@ -107,3 +115,22 @@ def evaluate_infix_expression(node: InfixExpression) -> Object:
             return NullObj()
     else:
         return NullObj()
+
+
+def evaluate_if_expression(node: IfExpression) -> Object:
+    value = evaluate(node.condition)
+
+    if is_truthy(value):
+        return evaluate(node.consequence)
+    elif node.alternative:
+        return evaluate(node.alternative)
+    return NullObj()
+
+
+def is_truthy(value: Object):
+    if isinstance(value, BooleanObj):
+        return value.value
+    elif isinstance(value, IntegerObj):
+        return value.value != 0
+    else:
+        return False

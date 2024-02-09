@@ -41,3 +41,25 @@ def test_evaluate_single_statement(test_input, expected):
     result = evaluate(program)
 
     assert result.inspect() == str(expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("if (3<5) {5} else {3}", 5),
+        ("if (3>5) {5} else {3}", 3),
+        ("if (3<5) {5;2;} else {3}", 2),
+        ("if (3>5) {5;2;}", "null"),
+        ("if (10) {5} else {2}", 5),
+        ("if (0) {5} else {2}", 2),
+    ],
+)
+def test_evaluate_if_expression(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+
+    program = parser.parse_program()
+
+    result = evaluate(program)
+
+    assert result.inspect() == str(expected)

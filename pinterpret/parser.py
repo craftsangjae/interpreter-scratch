@@ -10,7 +10,7 @@ from enum import IntEnum
 from typing import Optional, List, Dict, Callable
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
-    ExpressionStatement, IntegerExpression
+    ExpressionStatement, IntegerExpression, PrefixExpression
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -54,6 +54,8 @@ class Parser:
 
         self.register_prefix(TokenType.IDENT, self.parse_identifier)
         self.register_prefix(TokenType.INT, self.parse_identifier)
+        self.register_prefix(TokenType.BANG, self.parse_prefix_expression)
+        self.register_prefix(TokenType.MINUS, self.parse_prefix_expression)
 
     def parse_program(self) -> Program:
         program = Program()
@@ -160,3 +162,9 @@ class Parser:
 
     def parse_integer(self) -> Expression:
         return IntegerExpression(self.ct)
+
+    def parse_prefix_expression(self) -> Expression:
+        token = self.ct
+        self.next_token()
+        right = self.parse_expression(OperatorPrecedence.PREFIX)
+        return PrefixExpression(token, right)

@@ -28,6 +28,23 @@ class Expression(Node):
     pass
 
 
+class PrefixExpression(Expression):
+    token: Token
+    operator: str
+    right: Expression
+
+    def __init__(self, token: Token, right: Expression):
+        self.token = token
+        self.operator = token.literal
+        self.right = right
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        return f"({self.operator}{self.right})"
+
+
 class IntegerExpression(Expression):
     """ 숫자형 표현
     """

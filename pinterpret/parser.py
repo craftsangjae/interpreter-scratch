@@ -20,7 +20,7 @@ from enum import IntEnum
 from typing import Optional, List, Dict, Callable
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
-    ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression
+    ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression, BoolExpression
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -75,15 +75,20 @@ class Parser:
         self.prefix_parse_fns = {}
         self.infix_parse_fns = {}
 
-        self.register_prefix(TokenType.IDENT, self.parse_identifier)
-        self.register_prefix(TokenType.INT, self.parse_identifier)
-        self.register_prefix(TokenType.BANG, self.parse_prefix_expression)
-        self.register_prefix(TokenType.MINUS, self.parse_prefix_expression)
+        # register identifier
+        [self.register_prefix(t, self.parse_identifier) for t in [TokenType.IDENT, TokenType.INT]]
 
+        # register bool literal
+        [self.register_prefix(t, self.parse_bool) for t in [TokenType.TRUE, TokenType.FALSE]]
+
+        # register prefix expression
+        [self.register_prefix(t, self.parse_prefix_expression) for t in [TokenType.BANG, TokenType.MINUS]]
+
+        # register infix expression
         [
-            self.register_infix(token_type, self.parse_infix_expression)
-            for token_type in [TokenType.PLUS, TokenType.MINUS, TokenType.SLASH, TokenType.ASTERISK,
-                               TokenType.LT, TokenType.GT, TokenType.EQUAL, TokenType.NOT_EQUAL, ]
+            self.register_infix(t, self.parse_infix_expression)
+            for t in [TokenType.PLUS, TokenType.MINUS, TokenType.SLASH, TokenType.ASTERISK,
+                      TokenType.LT, TokenType.GT, TokenType.EQUAL, TokenType.NOT_EQUAL, ]
         ]
 
     def parse_program(self) -> Program:
@@ -235,6 +240,9 @@ class Parser:
 
     def parse_integer(self) -> Expression:
         return IntegerExpression(self.ct)
+
+    def parse_bool(self) -> Expression:
+        return BoolExpression(self.ct)
 
     def parse_prefix_expression(self) -> Expression:
         token = self.ct

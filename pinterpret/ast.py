@@ -82,6 +82,23 @@ class IntegerExpression(Expression):
         return str(self.value)
 
 
+class BoolExpression(Expression):
+    """ 불 리터럴
+    """
+    token: Token
+    value: bool
+
+    def __init__(self, token: Token):
+        self.token = token
+        self.value = self.token.literal.lower() == 'true'
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        return self.token.literal
+
+
 class Identifier(Expression):
     """ 식별자 노드
     """

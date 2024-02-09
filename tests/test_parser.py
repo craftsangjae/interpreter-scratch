@@ -15,6 +15,11 @@ from tests.consts import SOURCE_CODE_TEST_004
             SOURCE_CODE_TEST_004,
             ['x', '', ''],
             [TokenType.LET, TokenType.RETURN, TokenType.RETURN]
+    ),
+    (
+            'let x = true;',
+            ['x'],
+            [TokenType.LET]
     )
 ])
 def test_parse_let_and_return_statements(test_input, expected_identifiers, expected_types):
@@ -63,6 +68,8 @@ def test_parse_wrong_let_statements(test_input, expected_message):
     ('baby;', 'baby'),
     ('5;', '5'),
     ('7;', '7'),
+    ('true;', True),
+    ('false;', False)
 ])
 def test_parse_single_line_expression_statement(test_input, expected):
     lexer = Lexer(test_input)
@@ -121,7 +128,9 @@ def test_parse_single_line_infix_expression(test_input, expected):
     ('a + b + c;', '((a+b)+c)'),
     ('a + b - c;', '((a+b)-c)'),
     ('a + b / c;', '(a+(b/c))'),
-    ('a + b / c + d * e', '((a+(b/c))+(d*e))')
+    ('a + b / c + d * e', '((a+(b/c))+(d*e))'),
+    ('3 > 5 == false', '((3>5)==false)'),
+    ('true == 3 < 5', '(true==(3<5))')
 ])
 def test_parse_multiple_lines_infix_expression(test_input, expected):
     lexer = Lexer(test_input)

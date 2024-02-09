@@ -191,14 +191,27 @@ class Parser:
 
     def parse_expression(self, precedence: OperatorPrecedence) -> Optional[Expression]:
         """ 프렛파서에서 핵심이 되는 로직
+        case 1. 'a + b * c;'
+        1) ct -> a을 바라봄
+        2) a에 parse_identifier 적용
+        3) depth1-while 구문 진입 --> infix_function 나옴
+        4) infix_function 내 진입 --> parse_expression 호출 (이때, +의 precedence를 물고 호출)
+        5) depth2-while 구문 진입 --> infix_function 나옴 (이때, *가 +보다 우선순위 높기 때문)
+        6) infix_function 내 진입 --> parse_expression 호출
+        7) depth3-while 구문 진입 --> 세미콜론 만나면서 탈출
+        8) depth2-while 구문으로 나옴 --> (b * c)
+        9) depth1-while 구문으로 나옴 --> a + (b * c)
 
-        case 1. '-a;'
-
-        case 2. 'a + b;'
-
-        case 3. 'a + b * c;'
-
-        case 4. 'a + b + c;'
+        case 2. 'a + b + c;'
+        1) ct -> a을 바라봄
+        2) a에 parse_identifier 적용
+        3) depth1-while 구문 진입 --> infix_function 나옴
+        4) infix_function 내 진입 --> parse_expression 호출 (이때, +의 precedence를 물고 호출)
+        5) depth2-while 구문 진입 --> 스킵
+           => 주어진 피연산자가
+           left_expr에 빨려들어갈 것인지, right_expr에 빨려들어갈 것인지를
+           precedence < self.next_precedence()로 결정
+        6) depth1-while 구문으로 나옴 --> l_expr에 (a+b)가 됨
 
         :param precedence:
         :return:
@@ -229,9 +242,9 @@ class Parser:
         right = self.parse_expression(OperatorPrecedence.PREFIX)
         return PrefixExpression(token, right)
 
-    def parse_infix_expression(self, left: Expression) -> Expression:
+    def parse_infix_expression(self, left_expr: Expression) -> Expression:
         token = self.ct
         precedence = self.curr_precedence()
         self.next_token()
-        right = self.parse_expression(precedence)
-        return InfixExpression(token, left, right)
+        right_expr = self.parse_expression(precedence)
+        return InfixExpression(token, left_expr, right_expr)

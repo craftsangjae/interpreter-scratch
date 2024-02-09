@@ -121,6 +121,7 @@ def test_parse_single_line_infix_expression(test_input, expected):
     ('a + b + c;', '((a+b)+c)'),
     ('a + b - c;', '((a+b)-c)'),
     ('a + b / c;', '(a+(b/c))'),
+    ('a + b / c + d * e', '((a+(b/c))+(d*e))')
 ])
 def test_parse_multiple_lines_infix_expression(test_input, expected):
     lexer = Lexer(test_input)

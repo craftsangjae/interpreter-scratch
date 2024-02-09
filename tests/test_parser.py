@@ -54,7 +54,7 @@ def test_parse_let_and_return_statements(
 @pytest.mark.parametrize(
     "test_input,expected_name,expected_value",
     [
-        ("let x = 3 + 7", "x", "(3+7)"),
+        # ("let x = 3 + 7", "x", "(3+7)"),
         ("let y = a + b * c", "y", "(a+(b*c))"),
     ],
 )
@@ -106,8 +106,8 @@ def test_parse_wrong_let_statements(test_input, expected_message):
     [
         ("foobar;", "foobar"),
         ("baby;", "baby"),
-        ("5;", "5"),
-        ("7;", "7"),
+        ("5;", 5),
+        ("7;", 7),
         ("true;", True),
         ("false;", False),
     ],

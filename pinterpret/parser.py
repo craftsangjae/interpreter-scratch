@@ -91,7 +91,7 @@ class Parser:
         self.infix_parse_fns = {}
 
         # register identifier
-        self.register_prefix(TokenType.IDENT, self.parse_integer)
+        self.register_prefix(TokenType.IDENT, self.parse_identifier)
 
         # register integer
         self.register_prefix(TokenType.INT, self.parse_integer)
@@ -196,7 +196,8 @@ class Parser:
         expression = self.parse_expression(OperatorPrecedence.LOWEST)
 
         self.next_token()
-        if self.curr_token_is(TokenType.SEMICOLON):
+
+        if self.next_token_is(TokenType.SEMICOLON):
             self.next_token()
 
         return ReturnStatement(return_token, expression)

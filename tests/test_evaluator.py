@@ -1,5 +1,6 @@
 import pytest
 
+from pinterpret.environment import Environment
 from pinterpret.evaluator import evaluate
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
@@ -38,7 +39,7 @@ def test_evaluate_single_statement(test_input, expected):
 
     program = parser.parse_program()
 
-    result = evaluate(program)
+    result = evaluate(program, Environment())
 
     assert result.inspect() == str(expected)
 
@@ -60,7 +61,7 @@ def test_evaluate_if_expression(test_input, expected):
 
     program = parser.parse_program()
 
-    result = evaluate(program)
+    result = evaluate(program, Environment())
 
     assert result.inspect() == str(expected)
 
@@ -81,7 +82,7 @@ def test_evaluate_return_statements(test_input, expected):
 
     program = parser.parse_program()
 
-    result = evaluate(program)
+    result = evaluate(program, Environment())
 
     assert result.inspect() == str(expected)
 
@@ -102,6 +103,6 @@ def test_handle_error(test_input, expected):
 
     program = parser.parse_program()
 
-    result = evaluate(program)
+    result = evaluate(program, Environment())
 
     assert result.inspect() == str(expected)

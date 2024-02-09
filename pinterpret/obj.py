@@ -1,5 +1,9 @@
-from abc import ABC, abstractmethod
 from enum import Enum
+from typing import List
+
+from pinterpret.ast import Identifier, BlockStatement
+from pinterpret.common import Object
+from pinterpret.environment import Environment
 
 
 class ObjectType(Enum):
@@ -8,14 +12,7 @@ class ObjectType(Enum):
     Null = "NULL"
     Return = "RETURN"
     Error = "ERROR"
-
-
-class Object(ABC):
-    type: ObjectType
-
-    @abstractmethod
-    def inspect(self) -> str:
-        pass
+    Function = "FUNCTION"
 
 
 class IntegerObj(Object):
@@ -82,3 +79,22 @@ class ErrorObj(Object):
 
     def inspect(self) -> str:
         return "Error: " + self.message
+
+
+class FunctionObj(Object):
+    parameters: List[Identifier]
+    body: BlockStatement
+
+    env: Environment
+
+    def __init__(
+        self, parameters: List[Identifier], body: BlockStatement, env: Environment
+    ):
+        self.type = ObjectType.Function
+        self.parameters = parameters
+        self.body = body
+        self.env = env
+
+    def inspect(self) -> str:
+        params = ",".join([p.value for p in self.parameters])
+        return f"fn ({params}) {{{self.body}}}"

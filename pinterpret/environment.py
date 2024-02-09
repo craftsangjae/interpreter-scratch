@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from pinterpret.obj import Object
+from pinterpret.common import Object
 
 
 class Environment:

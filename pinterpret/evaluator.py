@@ -14,9 +14,18 @@ from pinterpret.ast import (
     ReturnStatement,
     LetStatement,
     Identifier,
+    FunctionLiteral,
 )
+from pinterpret.common import Object
 from pinterpret.environment import Environment
-from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj, ReturnObj, ErrorObj
+from pinterpret.obj import (
+    IntegerObj,
+    BooleanObj,
+    NullObj,
+    ReturnObj,
+    ErrorObj,
+    FunctionObj,
+)
 from pinterpret.token import TokenType
 
 
@@ -57,6 +66,9 @@ def evaluate(node: Node, env: Environment) -> Object:
             return val
         else:
             return ErrorObj("identifier not found : " + node.value)
+
+    elif isinstance(node, FunctionLiteral):
+        return FunctionObj(parameters=node.parameters, body=node.body, env=env)
 
     elif isinstance(node, BoolLiteral):
         return BooleanObj(node.value)

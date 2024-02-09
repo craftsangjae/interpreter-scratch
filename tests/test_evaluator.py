@@ -3,6 +3,7 @@ import pytest
 from pinterpret.environment import Environment
 from pinterpret.evaluator import evaluate
 from pinterpret.lexer import Lexer
+from pinterpret.obj import FunctionObj
 from pinterpret.parser import Parser
 
 
@@ -109,3 +110,25 @@ def test_handle_error(test_input, expected):
     result = evaluate(program, Environment())
 
     assert result.inspect() == str(expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected_params,expected_body",
+    [
+        ("fn(x,y,z) {x+y+z}", ["x", "y", "z"], ["((x+y)+z)"]),
+    ],
+)
+def test_evaluate_function_literal(test_input, expected_params, expected_body):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+
+    program = parser.parse_program()
+
+    result: FunctionObj = evaluate(program, Environment())
+
+    assert len(result.parameters) == len(expected_params)
+    for param, expected in zip(result.parameters, expected_params):
+        assert param.value == expected
+
+    for body, expected in zip(result.body.statements, expected_body):
+        assert str(body) == expected

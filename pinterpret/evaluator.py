@@ -13,7 +13,7 @@ from pinterpret.ast import (
     BlockStatement,
     ReturnStatement,
 )
-from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj, ReturnObj
+from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj, ReturnObj, ErrorObj
 from pinterpret.token import TokenType
 
 
@@ -52,7 +52,7 @@ def evaluate_statements(stmts: List[Statement]) -> Object:
     result = NullObj()
     for stmt in stmts:
         result = evaluate(stmt)
-        if isinstance(result, ReturnObj):
+        if isinstance(result, ReturnObj) or isinstance(result, ErrorObj):
             return result
     return result
 
@@ -71,27 +71,37 @@ def evaluate_bang_prefix_expression(right_obj: Object) -> Object:
 def evaluate_minus_prefix_expression(right_obj: Object) -> Object:
     if isinstance(right_obj, IntegerObj):
         return IntegerObj(-right_obj.value)
-    return NullObj()
+    return ErrorObj(f"not supported : - {right_obj.type}")
 
 
 def evaluate_prefix_expression(node: PrefixExpression):
     right_obj = evaluate(node.right)
+
+    if isinstance(right_obj, ErrorObj):
+        return right_obj
 
     if node.token.type == TokenType.BANG:
         return evaluate_bang_prefix_expression(right_obj)
     elif node.token.type == TokenType.MINUS:
         return evaluate_minus_prefix_expression(right_obj)
     else:
-        return NullObj()
+        return ErrorObj(f"not supported : {node.operator} {right_obj.type}")
 
 
 def evaluate_infix_expression(node: InfixExpression) -> Object:
     left_obj = evaluate(node.left)
     right_obj = evaluate(node.right)
 
+    if isinstance(left_obj, ErrorObj):
+        return left_obj
+    elif isinstance(right_obj, ErrorObj):
+        return right_obj
+
     if node.operator in ("+", "-", "*", "/", "<", ">"):
         if not (isinstance(left_obj, IntegerObj) and isinstance(right_obj, IntegerObj)):
-            return NullObj()
+            return ErrorObj(
+                f"type mismatch : {left_obj.type} {node.operator} {right_obj.type}"
+            )
         if node.operator == "+":
             return IntegerObj(left_obj.value + right_obj.value)
         elif node.operator == "-":
@@ -105,26 +115,36 @@ def evaluate_infix_expression(node: InfixExpression) -> Object:
         elif node.operator == ">":
             return BooleanObj(left_obj.value > right_obj.value)
         else:
-            return NullObj()
+            return ErrorObj(
+                f"not supported : {left_obj.type} {node.operator} {right_obj.type}"
+            )
     elif node.operator in ("==", "!="):
         if not (
             (isinstance(left_obj, IntegerObj) and isinstance(right_obj, IntegerObj))
             or (isinstance(left_obj, BooleanObj) and isinstance(right_obj, BooleanObj))
         ):
-            return NullObj()
+            return ErrorObj(
+                f"type mismatch : {left_obj.type} {node.operator} {right_obj.type}"
+            )
 
         if node.operator == "==":
             return BooleanObj(left_obj.value == right_obj.value)
         elif node.operator == "!=":
             return BooleanObj(left_obj.value != right_obj.value)
         else:
-            return NullObj()
+            return ErrorObj(
+                f"not supported {left_obj.type} {node.operator} {right_obj.type}"
+            )
     else:
-        return NullObj()
+        return ErrorObj(
+            f"not supported {left_obj.type} {node.operator} {right_obj.type}"
+        )
 
 
 def evaluate_if_expression(node: IfExpression) -> Object:
     value = evaluate(node.condition)
+    if isinstance(value, ErrorObj):
+        return value
 
     if is_truthy(value):
         return evaluate(node.consequence)
@@ -135,6 +155,8 @@ def evaluate_if_expression(node: IfExpression) -> Object:
 
 def evaluate_return_statement(node: ReturnStatement) -> Object:
     value = evaluate(node.return_value)
+    if isinstance(value, ErrorObj):
+        return value
     return ReturnObj(value)
 
 

@@ -7,6 +7,7 @@ class ObjectType(Enum):
     Boolean = "BOOLEAN"
     Null = "NULL"
     Return = "RETURN"
+    Error = "ERROR"
 
 
 class Object(ABC):
@@ -71,3 +72,13 @@ class ReturnObj(Object):
 
     def __eq__(self, other: Object):
         return self.value == other
+
+
+class ErrorObj(Object):
+
+    def __init__(self, message: str):
+        self.type = ObjectType.Return
+        self.message = message
+
+    def inspect(self) -> str:
+        return "Error: " + self.message

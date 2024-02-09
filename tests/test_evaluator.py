@@ -84,3 +84,24 @@ def test_evaluate_return_statements(test_input, expected):
     result = evaluate(program)
 
     assert result.inspect() == str(expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("5==true", "Error: type mismatch : ObjectType.Integer == ObjectType.Boolean"),
+        (
+            "if(5==false) {3}",
+            "Error: type mismatch : ObjectType.Integer == ObjectType.Boolean",
+        ),
+    ],
+)
+def test_handle_error(test_input, expected):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+
+    program = parser.parse_program()
+
+    result = evaluate(program)
+
+    assert result.inspect() == str(expected)

@@ -26,6 +26,9 @@ class IntegerObj(Object):
     def inspect(self) -> str:
         return str(self.value)
 
+    def __eq__(self, other: "NullObj"):
+        return isinstance(other, IntegerObj) and (self.value == other.value)
+
 
 class BooleanObj(Object):
     value: bool
@@ -37,6 +40,13 @@ class BooleanObj(Object):
     def inspect(self) -> str:
         return str(self.value)
 
+    def __eq__(self, other: "BooleanObj"):
+        return (
+            isinstance(other, BooleanObj)
+            and (self.type == other.type)
+            and (self.value == other.value)
+        )
+
 
 class NullObj(Object):
     def __init__(self):
@@ -44,3 +54,6 @@ class NullObj(Object):
 
     def inspect(self) -> str:
         return "null"
+
+    def __eq__(self, other: "NullObj"):
+        return isinstance(other, NullObj)

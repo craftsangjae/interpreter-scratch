@@ -12,6 +12,13 @@ from pinterpret.parser import Parser
         ("54", 54),
         ("false", False),
         ("true", True),
+        ("!true", False),
+        ("!false", True),
+        ("!5", False),
+        ("!!true", True),
+        ("!!!true", False),
+        ("-5", -5),
+        ("--5", 5),
     ],
 )
 def test_evaluate_single_statement(test_input, expected):

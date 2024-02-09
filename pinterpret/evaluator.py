@@ -7,8 +7,10 @@ from pinterpret.ast import (
     ExpressionStatement,
     Program,
     Statement,
+    PrefixExpression,
 )
 from pinterpret.obj import Object, IntegerObj, BooleanObj, NullObj
+from pinterpret.token import TokenType
 
 
 def evaluate(node: Node) -> Object:
@@ -17,6 +19,9 @@ def evaluate(node: Node) -> Object:
 
     elif isinstance(node, ExpressionStatement):
         return evaluate(node.expression)
+
+    elif isinstance(node, PrefixExpression):
+        return evaluate_prefix_expression(node)
 
     elif isinstance(node, IntegerLiteral):
         return IntegerObj(node.value)
@@ -32,3 +37,31 @@ def evaluate_statements(stmts: List[Statement]) -> Object:
     for stmt in stmts:
         result = evaluate(stmt)
     return result
+
+
+def evaluate_bang_prefix_expression(right_obj: Object) -> Object:
+    if right_obj == BooleanObj(True):
+        return BooleanObj(False)
+    elif right_obj == BooleanObj(False):
+        return BooleanObj(True)
+    elif right_obj == NullObj():
+        return BooleanObj(True)
+    else:
+        return BooleanObj(False)
+
+
+def evaluate_minus_prefix_expression(right_obj: Object) -> Object:
+    if isinstance(right_obj, IntegerObj):
+        return IntegerObj(-right_obj.value)
+    return NullObj()
+
+
+def evaluate_prefix_expression(node: PrefixExpression):
+    right_obj = evaluate(node.right)
+
+    if node.token.type == TokenType.BANG:
+        return evaluate_bang_prefix_expression(right_obj)
+    elif node.token.type == TokenType.MINUS:
+        return evaluate_minus_prefix_expression(right_obj)
+    else:
+        return NullObj()

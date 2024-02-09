@@ -2,7 +2,7 @@ import pytest
 
 from pinterpret.ast import (
     LetStatement, ReturnStatement, ExpressionStatement,
-    Identifier, PrefixExpression, InfixExpression, IfExpression
+    Identifier, PrefixExpression, InfixExpression, IfExpression, FunctionLiteral
 )
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
@@ -176,3 +176,25 @@ def test_parse_if_expression(test_input, expected_cond, expected_consequence, ex
     assert str(if_stmt.condition) == expected_cond
     assert str(if_stmt.consequence) == expected_consequence
     assert str(if_stmt.alternative) == str(expected_alternatives)
+
+
+@pytest.mark.parametrize('test_input,expected_parameters,expected_body', [
+    ('fn (x,y,z) {x+y+z}', ['x', 'y', 'z'], '((x+y)+z)'),
+])
+def test_parse_function_literal(test_input, expected_parameters, expected_body):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    function_literal: FunctionLiteral = stmt.expression
+
+    assert function_literal.token.type == TokenType.FUNCTION
+
+    assert len(function_literal.parameters) == len(expected_parameters)
+    for param, expected_param in zip(function_literal.parameters, expected_parameters):
+        assert str(param) == expected_param
+
+    assert str(function_literal.body) == expected_body

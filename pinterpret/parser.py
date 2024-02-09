@@ -21,7 +21,7 @@ from typing import Optional, List, Dict, Callable
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
     ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression, BoolExpression, IfExpression, \
-    BlockStatement
+    BlockStatement, FunctionLiteral
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -95,8 +95,11 @@ class Parser:
         # register group expression
         self.register_prefix(TokenType.LPAREN, self.parse_grouped_expression)
 
-        # register group expression
+        # register if expression
         self.register_prefix(TokenType.IF, self.parse_if_expression)
+
+        # register function literal
+        self.register_prefix(TokenType.FUNCTION, self.parse_function_literal)
 
     def parse_program(self) -> Program:
         program = Program()
@@ -312,3 +315,32 @@ class Parser:
                 stmts.append(stmt)
             self.next_token()
         return BlockStatement(token, stmts)
+
+    def parse_function_literal(self) -> Optional[FunctionLiteral]:
+        token = self.ct
+
+        if not self.expect_peek(TokenType.LPAREN):
+            return
+
+        parameters = self.parse_parameters()
+
+        if not self.expect_peek(TokenType.LBRACE):
+            return
+
+        body = self.parse_block_statement()
+
+        return FunctionLiteral(token, parameters, body)
+
+    def parse_parameters(self) -> List[Identifier]:
+        self.next_token()
+        identifiers = []
+        while not self.curr_token_is(TokenType.RPAREN):
+            if identifier := self.parse_identifier():
+                identifiers.append(identifier)
+                self.next_token()
+            else:
+                return []
+
+            if self.curr_token_is(TokenType.COMMA):
+                self.next_token()
+        return identifiers

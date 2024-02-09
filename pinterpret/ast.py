@@ -11,17 +11,6 @@ class Node(ABC):
         pass
 
 
-class Statement(Node):
-    """ 명령문
-
-    명령문 vs 표현식
-    명령문 : 값을 만들지 않음 (ex : return 5;)
-
-    표현식 : 값을 만듦 (ex: add(5,3);)
-    """
-    pass
-
-
 class Expression(Node):
     """표현식
     """
@@ -99,6 +88,17 @@ class BoolExpression(Expression):
         return self.token.literal
 
 
+class Statement(Node):
+    """ 명령문
+
+    명령문 vs 표현식
+    명령문 : 값을 만들지 않음 (ex : return 5;)
+
+    표현식 : 값을 만듦 (ex: add(5,3);)
+    """
+    pass
+
+
 class BlockStatement(Statement):
     """
     """
@@ -163,6 +163,24 @@ class Identifier(Expression):
 
     def __str__(self):
         return self.value
+
+
+class FunctionLiteral(Expression):
+    token: Token
+    parameters: List[Identifier]
+    body: BlockStatement
+
+    def __init__(self, token: Token, parameters: List[Identifier], body: BlockStatement):
+        self.token = token
+        self.parameters = parameters
+        self.body = body
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        params = '(' + ",".join([p.token_literal() for p in self.parameters]) + ')'
+        return f'fn {params} {{{self.body}}}'
 
 
 class LetStatement(Statement):

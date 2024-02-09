@@ -1,18 +1,8 @@
-from enum import Enum
 from typing import List
 
 from pinterpret.ast import Identifier, BlockStatement
-from pinterpret.common import Object
+from pinterpret.common import Object, ObjectType
 from pinterpret.environment import Environment
-
-
-class ObjectType(Enum):
-    Integer = "INTEGER"
-    Boolean = "BOOLEAN"
-    Null = "NULL"
-    Return = "RETURN"
-    Error = "ERROR"
-    Function = "FUNCTION"
 
 
 class IntegerObj(Object):

@@ -88,6 +88,24 @@ class BoolExpression(Expression):
         return self.token.literal
 
 
+class CallExpression(Expression):
+    token: Token
+    function: Expression
+    arguments: List[Expression]
+
+    def __init__(self, token: Token, function: Expression, arguments: List[Expression]):
+        self.token = token
+        self.function = function
+        self.arguments = arguments
+
+    def token_literal(self) -> str:
+        return self.token.literal
+
+    def __str__(self):
+        args = ",".join([str(arg) for arg in self.arguments])
+        return f'{self.function.token_literal()}({args})'
+
+
 class Statement(Node):
     """ 명령문
 

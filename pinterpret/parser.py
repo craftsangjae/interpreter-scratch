@@ -21,7 +21,7 @@ from typing import Optional, List, Dict, Callable
 
 from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
     ExpressionStatement, IntegerExpression, PrefixExpression, InfixExpression, BoolExpression, IfExpression, \
-    BlockStatement, FunctionLiteral
+    BlockStatement, FunctionLiteral, CallExpression
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
 
@@ -46,7 +46,8 @@ PRECEDENCE_RELATION = {
     TokenType.PLUS: OperatorPrecedence.SUM,
     TokenType.MINUS: OperatorPrecedence.SUM,
     TokenType.SLASH: OperatorPrecedence.PRODUCT,
-    TokenType.ASTERISK: OperatorPrecedence.PREFIX
+    TokenType.ASTERISK: OperatorPrecedence.PREFIX,
+    TokenType.LPAREN: OperatorPrecedence.CALL
 }
 
 # 전위함수 파싱 로직
@@ -100,6 +101,9 @@ class Parser:
 
         # register function literal
         self.register_prefix(TokenType.FUNCTION, self.parse_function_literal)
+
+        # register call expression
+        self.register_infix(TokenType.LPAREN, self.parse_call_expression)
 
     def parse_program(self) -> Program:
         program = Program()
@@ -344,3 +348,19 @@ class Parser:
             if self.curr_token_is(TokenType.COMMA):
                 self.next_token()
         return identifiers
+
+    def parse_call_expression(self, function: Expression) -> Optional[CallExpression]:
+        token = self.ct
+        self.next_token()
+        args = []
+        while not self.curr_token_is(TokenType.RPAREN):
+            arg = self.parse_expression(OperatorPrecedence.LOWEST)
+            args.append(arg)
+            if arg is None:
+                return None
+
+            if self.next_token_is(TokenType.COMMA):
+                self.next_token()
+            self.next_token()
+
+        return CallExpression(token, function, args)

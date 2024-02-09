@@ -2,7 +2,7 @@ import pytest
 
 from pinterpret.ast import (
     LetStatement, ReturnStatement, ExpressionStatement,
-    Identifier, PrefixExpression, InfixExpression, IfExpression, FunctionLiteral
+    Identifier, PrefixExpression, InfixExpression, IfExpression, FunctionLiteral, CallExpression
 )
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
@@ -198,3 +198,29 @@ def test_parse_function_literal(test_input, expected_parameters, expected_body):
         assert str(param) == expected_param
 
     assert str(function_literal.body) == expected_body
+
+
+@pytest.mark.parametrize('test_input,expected_expression,expected_arguments', [
+    ('abc()', 'abc', []),
+    ('abc(1)', 'abc', ['1']),
+    ('abc(a,b+2)', 'abc', ['a', '(b+2)']),
+    ('abc(1+2,a,b)', 'abc', ['(1+2)', 'a', 'b']),
+])
+def test_parse_single_call_expression(test_input, expected_expression, expected_arguments):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+    for statement in program.statements:
+        print(statement)
+    assert len(program.statements) == 1
+
+    stmt: ExpressionStatement = program.statements[0]
+    call_expr: CallExpression = stmt.expression
+
+    assert call_expr.token.type == TokenType.LPAREN
+
+    assert len(call_expr.arguments) == len(expected_arguments)
+    for arg, expected_arg in zip(call_expr.arguments, expected_arguments):
+        assert str(arg) == expected_arg
+
+    assert str(call_expr.function) == expected_expression

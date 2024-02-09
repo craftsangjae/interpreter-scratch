@@ -1,8 +1,33 @@
-from typing import Optional, List
+"""
+Parsing의 정의
 
-from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement
+파서는 (주로 문자로 된) 입력 데이터를 받아 자료구조를 만들어내는 소프트웨어 컴포넌트.
+자료구조 형태는 파스 트리(Parse Tree), 추상구문트리일 수 있고, 그렇지 않으면 다른 계층 구조일 수 도 있다.
+파서는 자료구조를 만들면서 구조화된 표현을 더ㅏㅎ기도, 구문이 올바른지 검사하기도 한다.
+
+"""
+from enum import IntEnum
+from typing import Optional, List, Dict, Callable
+
+from pinterpret.ast import Program, Statement, LetStatement, Identifier, ReturnStatement, Expression, \
+    ExpressionStatement
 from pinterpret.lexer import Lexer
 from pinterpret.token import Token, TokenType
+
+
+class OperatorPrecedence(IntEnum):
+    LOWEST = 1
+    EQUALS = 2
+    LESSGREATER = 3
+    SUM = 4
+    PRODUCT = 5
+    PREFIX = 6
+    CALL = 7
+
+
+# 전위함수 파싱 로직
+prefix_parse_ftype = Callable[[], Expression]
+infix_parse_ftype = Callable[[Expression], Expression]
 
 
 class Parser:
@@ -13,6 +38,9 @@ class Parser:
 
     errors: List[str]
 
+    prefix_parse_fns: Dict[TokenType, prefix_parse_ftype]
+    infix_parse_fns: Dict[TokenType, infix_parse_ftype]
+
     def __init__(self, lexer: Lexer):
         self.lexer = lexer
 
@@ -21,6 +49,10 @@ class Parser:
         self.nt = self.lexer.next_token()
 
         self.errors = []
+        self.prefix_parse_fns = {}
+        self.infix_parse_fns = {}
+
+        self.register_prefix(TokenType.IDENT, self.parse_identifier)
 
     def parse_program(self) -> Program:
         program = Program()
@@ -33,6 +65,12 @@ class Parser:
 
         return program
 
+    def register_prefix(self, token_type: TokenType, prefix_parse_func: prefix_parse_ftype):
+        self.prefix_parse_fns[token_type] = prefix_parse_func
+
+    def register_infix(self, token_type: TokenType, infix_parse_func: infix_parse_ftype):
+        self.infix_parse_fns[token_type] = infix_parse_func
+
     def next_token(self):
         self.ct = self.nt
         self.nt = self.lexer.next_token()
@@ -43,7 +81,9 @@ class Parser:
         elif self.ct.type == TokenType.RETURN:
             return self.parse_return_statement()
         else:
-            return None
+            # monkey 언어에는 실질적 명령문이 let 문과 return 문이 두 개 밖에 없기 때문에,
+            # 이 두 경우가 아닐 때는 표현식 문으로 파싱한다.
+            return self.parse_expression_statement()
 
     def parse_let_statement(self) -> Optional[LetStatement]:
         let_token = self.ct
@@ -77,6 +117,21 @@ class Parser:
 
         return ReturnStatement(return_token, None)
 
+    def parse_expression_statement(self) -> Optional[ExpressionStatement]:
+        """ entrypoint for parsing expression.
+        :return:
+        """
+        token = self.ct
+
+        expression = self.parse_expression(OperatorPrecedence.LOWEST)
+
+        if self.next_token_is(TokenType.SEMICOLON):
+            # 선택적으로 처리할 수 있도록 위와 같이 구현
+            # semicolon이 없어도 REPL에서 알아서 처리가능하도록.
+            self.next_token()
+
+        return ExpressionStatement(token, expression)
+
     def curr_token_is(self, t: TokenType) -> bool:
         return self.ct.type == t
 
@@ -93,3 +148,11 @@ class Parser:
     def peek_error(self, t: TokenType):
         error = f'expected next token to be {t.value}, got {self.nt.type} instead'
         self.errors.append(error)
+
+    def parse_expression(self, priority: OperatorPrecedence) -> Optional[Expression]:
+        if prefix := self.prefix_parse_fns.get(self.ct.type):
+            # if prefix is not None,
+            return prefix()
+
+    def parse_identifier(self) -> Expression:
+        return Identifier(self.ct)

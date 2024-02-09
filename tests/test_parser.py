@@ -1,6 +1,6 @@
 import pytest
 
-from pinterpret.ast import LetStatement, ReturnStatement
+from pinterpret.ast import LetStatement, ReturnStatement, ExpressionStatement, Identifier
 from pinterpret.lexer import Lexer
 from pinterpret.parser import Parser
 from pinterpret.token import TokenType
@@ -53,3 +53,18 @@ def test_parse_wrong_let_statements(test_input, expected_message):
     program = parser.parse_program()
 
     assert parser.errors
+
+
+@pytest.mark.parametrize('test_input,num_stmts', [
+    ('foobar;', 1)
+])
+def test_parse_identifier_expression(test_input, num_stmts):
+    lexer = Lexer(test_input)
+    parser = Parser(lexer)
+    program = parser.parse_program()
+
+    assert len(program.statements) == num_stmts
+
+    stmt: ExpressionStatement = program.statements[0]
+    identifier: Identifier = stmt.expression
+    assert identifier.value == 'foobar'

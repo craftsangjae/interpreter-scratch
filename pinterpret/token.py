@@ -72,6 +72,9 @@ class TokenType(Enum):
             TokenType.RETURN
         )
 
+    def __hash__(self):
+        return hash(self.value)
+
     def __eq__(self, other: Union['TokenType', str]):
         if isinstance(other, str):
             return self.value == other
